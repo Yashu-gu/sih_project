@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Civic Connect | Staff Command Console</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-[#0b0f19] text-slate-200 font-sans min-h-screen pb-12">
+
+  <!-- Main Workspace Header -->
+  <header class="bg-[#111827] border-b border-slate-800 px-6 py-4 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl shadow-xl">
+    <div class="flex items-center gap-3">
+      <span class="text-amber-500 font-bold text-xl">⚡</span>
+      <div>
+        <h1 class="text-sm font-black tracking-wider text-slate-100 uppercase">INTERNAL DISPATCH NODE</h1>
+        <p class="text-[10px] text-slate-500 font-mono">OFFICER CONSOLE // SECTOR-MAIN</p>
+      </div>
+    </div>
+    <div class="text-right">
+      <span class="text-[10px] font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400 px-3 py-1 rounded-md uppercase tracking-wider">Public Works Dept</span>
+    </div>
+  </header>
+
+  <!-- Control Desk Grid -->
+  <main class="max-w-7xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- LEFT SIDEBAR: MANUALLY REGISTER COMPLAINTS -->
+    <div class="bg-[#111827] p-6 rounded-xl border border-slate-800 shadow-lg h-fit space-y-5">
+      <div class="border-l-2 border-amber-500 pl-3">
+        <h2 class="text-xs font-bold text-slate-100 uppercase tracking-widest">Lodge Field Complaint</h2>
+        <p class="text-[10px] text-slate-500 uppercase mt-0.5">Manual intake operator module</p>
+      </div>
+      
+      <div class="space-y-4 pt-2">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Target Department / Category</label>
+          <select id="issueType" class="w-full bg-[#070a12] border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+            <option>[PWD] Pothole / Road Damage</option>
+            <option>[PWD] Streetlight Malfunction</option>
+            <option>[Sanitation] Garbage Accumulation</option>
+            <option>[Water Board] Supply Leakage</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Staff Landmark Notes</label>
+          <input type="text" id="issueDesc" placeholder="Enter specific avenue miles or cross-roads..." class="w-full bg-[#070a12] border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Field GPS Telemetry</label>
+          <div class="flex gap-2">
+            <button onclick="getStaffGPS()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium py-2 px-3 rounded-lg transition whitespace-nowrap">
+              📍 Capture GPS
+            </button>
+            <div id="geoStatus" class="text-[10px] text-slate-500 self-center font-mono truncate">0.0000, 0.0000</div>
+          </div>
+        </div>
+
+        <button onclick="staffSubmitTicket()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-lg transition text-xs tracking-wider uppercase cursor-pointer shadow-md">
+          Authorize & Dispatch Ticket
+        </button>
+      </div>
+      <p id="formMsg" class="text-xs font-semibold p-3 rounded-lg hidden text-center"></p>
+    </div>
+
+    <!-- MAIN ACTIVE MONITOR DISPLAY: VIEW AND UPDATE TICKETS -->
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- List Filter Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex gap-4">
+          <button id="deptTab" onclick="toggleFeed('dept')" class="text-xs font-bold tracking-wider uppercase text-amber-400 border-b-2 border-amber-400 pb-2 cursor-pointer">
+            💼 My Department Feed
+          </button>
+          <button id="allTab" onclick="toggleFeed('all')" class="text-xs font-bold tracking-wider uppercase text-slate-500 hover:text-slate-300 pb-2 cursor-pointer">
+            🌐 Global City Feed
+          </button>
+        </div>
+        <span class="text-[10px] font-mono text-slate-600 uppercase">Live Operations Matrix</span>
+      </div>
+
+      <!-- Live Ledger Stream Container -->
+      <div id="ticketStream" class="space-y-4">
+        <!-- Mock Ticket Row 1 -->
+        <div class="bg-[#111827] border border-slate-800 p-5 rounded-xl space-y-4 ticket-card" data-dept="pwd">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono font-bold text-slate-100">TK-4821</span>
+                <span class="text-[10px] font-bold bg-slate-800 border border-slate-700 text-slate-300 px-2 py-0.5 rounded uppercase">[PWD] Pothole Damage</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-2">"Deep road cavity near the highway connector bridge loop corner."</p>
+              <div class="flex gap-4 text-[10px] text-slate-500 font-mono mt-2">
+                <span>📍 GPS: 12.9716, 77.5946</span>
+                <span>⏱️ Time Remaining: <span id="timer-4821" class="text-slate-400 font-bold">44 hrs</span></span>
+              </div>
+            </div>
+            <span id="status-4821" class="text-[10px] font-black uppercase bg-rose-500/10 border border-rose-500/20 text-rose-400 px-2 py-1 rounded">Open</span>
+          </div>
+
+          <!-- Functional Control Utility Strip -->
+          <div class="flex justify-between items-center border-t border-slate-800/60 pt-3 gap-2">
+            <div class="flex gap-2">
+              <button onclick="updateStatus('4821', 'Running')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold px-3 py-1.5 rounded text-[11px] transition cursor-pointer">
+                ⚙️ Set Running
+              </button>
+              <button onclick="updateStatus('4821', 'Resolved')" class="bg-emerald-950/40 hover:bg-emerald-900 border border-emerald-900/50 text-emerald-400 font-semibold px-3 py-1.5 rounded text-[11px] transition cursor-pointer">
+                ✅ Resolve Close
+              </button>
+            </div>
+            <button onclick="requestExtension('4821')" class="bg-amber-950/20 hover:bg-amber-900/30 border border-amber-900/40 text-amber-400 font-semibold px-3 py-1.5 rounded text-[10px] transition cursor-pointer uppercase tracking-wider">
+              ⏳ Request +24h
+            </button>
+          </div>
+        </div>
+
+        <!-- Mock Ticket Row 2 (Belongs to Sanitation Dept) -->
+        <div class="bg-[#111827] border border-slate-800 p-5 rounded-xl space-y-4 ticket-card" data-dept="sanitation">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono font-bold text-slate-100">TK-9104</span>
+                <span class="text-[10px] font-bold bg-slate-800 border border-slate-700 text-slate-300 px-2 py-0.5 rounded uppercase">[Sanitation] Waste Block</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-2">"Garbage pile spilled onto pedestrian lanes near regional market gate."</p>
+              <div class="flex gap-4 text-[10px] text-slate-500 font-mono mt-2">
+                <span>📍 GPS: 13.0827, 80.2707</span>
+                <span>⏱️ Time Remaining: <span id="timer-9104" class="text-slate-400 font-bold">18 hrs</span></span>
+              </div>
+            </div>
+            <span id="status-9104" class="text-[10px] font-black uppercase bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2 py-1 rounded">In Progress</span>
+          </div>
+
+          <div class="flex justify-between items-center border-t border-slate-800/60 pt-3 gap-2">
+            <div class="flex gap-2">
+              <button onclick="updateStatus('9104', 'Running')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold px-3 py-1.5 rounded text-[11px] transition cursor-pointer">
+                ⚙️ Set Running
+              </button>
+              <button onclick="updateStatus('9104', 'Resolved')" class="bg-emerald-950/40 hover:bg-emerald-900 border border-emerald-900/50 text-emerald-400 font-semibold px-3 py-1.5 rounded text-[11px] transition cursor-pointer">
+                ✅ Resolve Close
+              </button>
+            </div>
+            <button onclick="requestExtension('9104')" class="bg-amber-950/20 hover:bg-amber-900/30 border border-amber-900/40 text-amber-400 font-semibold px-3 py-1.5 rounded text-[10px] transition cursor-pointer uppercase tracking-wider">
+              ⏳ Request +24h
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let staffCoords = { latitude: 12.9716, longitude: 77.5946 };
+
+    function getStaffGPS() {
+      const status = document.getElementById('geoStatus');
+      if (!navigator.geolocation) return;
+      status.innerText = "Tracking...";
+      navigator.geolocation.getCurrentPosition((pos) => {
+        staffCoords.latitude = pos.coords.latitude.toFixed(4);
+        staffCoords.longitude = pos.coords.longitude.toFixed(4);
+        status.innerText = `${staffCoords.latitude}, ${staffCoords.longitude}`;
+      });
+    }
+
+    async function staffSubmitTicket() {
+      const msg = document.getElementById('formMsg');
+      const type = document.getElementById('issueType').value;
+      const desc = document.getElementById('issueDesc').value;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/submit-complaint', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...staffCoords, category: type, description: desc })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          msg.className = "text-xs font-bold p-3 rounded-lg text-center bg-emerald-950/40 border border-emerald-900 text-emerald-400 block";
+          msg.innerText = `🎫 Dispatched Live Ticket: ${data.ticketId}`;
+        }
+      } catch (err) {
+        msg.className = "text-xs font-bold p-3 rounded-lg text-center bg-rose-950/40 border border-rose-900 text-rose-400 block";
+        msg.innerText = "❌ System endpoint offline.";
+      }
+    }
+
+    // FEATURE: UPDATE PROGRESS STATUS LIVE
+    function updateStatus(ticketId, newState) {
+      const statusBadge = document.getElementById(`status-${ticketId}`);
+      if (!statusBadge) return;
+
+      if (newState === 'Running') {
+        statusBadge.className = "text-[10px] font-black uppercase bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2 py-1 rounded";
+        statusBadge.innerText = "In Progress";
+        alert(`⚙️ Ticket ${ticketId} status upgraded to: RUNNING OPERATIONS.`);
+      } else if (newState === 'Resolved') {
+        statusBadge.className = "text-[10px] font-black uppercase bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-1 rounded";
+        statusBadge.innerText = "Resolved";
+        alert(`✅ Ticket ${ticketId} officially locked and flagged as RESOLVED.`);
+      }
+    }
+
+    // FEATURE: ASK FOR MORE TIME (EXTENSION ACTION)
+    function requestExtension(ticketId) {
+      const timerElement = document.getElementById(`timer-${ticketId}`);
+      if (!timerElement) return;
+
+      // Extract current number of hours and append 24 hours to it dynamically
+      let currentHours = parseInt(timerElement.innerText);
+      let upgradedHours = currentHours + 24;
+      
+      timerElement.innerText = `${upgradedHours} hrs`;
+      alert(`⏳ Deadline optimization request transmitted! Added +24 hours to Ticket ${ticketId}.`);
+    }
+
+    // FEATURE: TAB FILTERS (MY DEPT VS ALL COMPLAINTS)
+    function toggleFeed(filterTarget) {
+      const deptTab = document.getElementById('deptTab');
+      const allTab = document.getElementById('allTab');
+      const cards = document.querySelectorAll('.ticket-card');
+
+      if (filterTarget === 'dept') {
+        deptTab.className = "text-xs font-bold tracking-wider uppercase text-amber-400 border-b-2 border-amber-400 pb-2 cursor-pointer";
+        allTab.className = "text-xs font-bold tracking-wider uppercase text-slate-500 hover:text-slate-300 pb-2 cursor-pointer";
+        
+        // Filter out everything that doesn't match our 'pwd' department marker tag
+        cards.forEach(card => {
+          if (card.getAttribute('data-dept') === 'pwd') card.classList.remove('hidden');
+          else card.classList.add('hidden');
+        });
+      } else {
+        allTab.className = "text-xs font-bold tracking-wider uppercase text-amber-400 border-b-2 border-amber-400 pb-2 cursor-pointer";
+        deptTab.className = "text-xs font-bold tracking-wider uppercase text-slate-500 hover:text-slate-300 pb-2 cursor-pointer";
+        
+        // Reveal all citywide cards
+        cards.forEach(card => card.classList.remove('hidden'));
+      }
+    }
+
+    // Default init view to show only department issues out of the gate
+    toggleFeed('dept');
+  </script>
+</body>
+</html>

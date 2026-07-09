@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Grievance Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex items-center justify-center font-sans p-4">
+
+  <div class="w-full max-w-md bg-white p-6 rounded-xl shadow-md border border-slate-200">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-xl font-bold text-slate-900">Report a Civic Issue</h1>
+      <p class="text-xs text-slate-500 mt-1">Submit an incident directly to municipal maintenance dispatch.</p>
+    </div>
+
+    <!-- Form -->
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 uppercase mb-2">Issue Type</label>
+        <select id="issueType" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-600">
+          <option>Pothole / Road Damage</option>
+          <option>Streetlight Malfunction</option>
+          <option>Garbage / Waste Accumulation</option>
+          <option>Water Leakage</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-600 uppercase mb-2">Location Coordinates</label>
+        <div class="flex gap-2">
+          <button onclick="getLocation()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium py-2.5 px-4 rounded-lg transition whitespace-nowrap">
+            📍 Share My GPS
+          </button>
+          <div id="geoStatus" class="text-xs text-slate-500 self-center font-mono truncate">No GPS locked</div>
+        </div>
+      </div>
+
+      <button onclick="submitIssue()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg transition text-sm mt-2 shadow-sm">
+        Submit Official Report
+      </button>
+    </div>
+
+    <!-- Feedback Banners -->
+    <p id="msg" class="text-xs font-medium mt-4 p-3 rounded-lg hidden text-center"></p>
+  </div>
+
+  <script>
+    let coords = { latitude: 0, longitude: 0 };
+
+    function getLocation() {
+      const status = document.getElementById('geoStatus');
+      if (!navigator.geolocation) {
+        status.innerText = "GPS not supported by browser.";
+        return;
+      }
+      status.innerText = "Locating...";
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          coords.latitude = position.coords.latitude.toFixed(4);
+          coords.longitude = position.coords.longitude.toFixed(4);
+          status.innerText = `Lat: ${coords.latitude}, Lon: ${coords.longitude}`;
+        },
+        () => { status.innerText = "❌ GPS Access Denied"; }
+      );
+    }
+
+    async function submitIssue() {
+      const msg = document.getElementById('msg');
+      const issue = document.getElementById('issueType').value;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/submit-complaint', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...coords, category: issue })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          msg.className = "text-xs font-medium mt-4 p-3 rounded-lg text-center bg-emerald-50 border border-emerald-200 text-emerald-800";
+          msg.innerText = `🎉 Report Submitted! Ticket ID: ${data.ticketId}`;
+          msg.classList.remove('hidden');
+        }
+      } catch (err) {
+        msg.className = "text-xs font-medium mt-4 p-3 rounded-lg text-center bg-rose-50 border border-rose-200 text-rose-800";
+        msg.innerText = "❌ Transmission failed. System offline.";
+        msg.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

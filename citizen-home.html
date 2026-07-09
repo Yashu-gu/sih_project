@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citizen Hub | Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-[#0f172a] text-slate-200 font-sans min-h-screen pb-12">
+
+  <header class="bg-[#1e293b] border-b border-slate-800 px-6 py-4 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl shadow-md">
+    <div class="flex items-center gap-2">
+      <span class="text-emerald-500 text-xl">🌱</span>
+      <h1 class="text-base font-bold text-white tracking-tight">Citizen Connect Portal</h1>
+    </div>
+    <span class="text-xs font-semibold bg-slate-800 text-slate-300 px-3 py-1 rounded-full">📍 Public Account</span>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <div class="lg:col-span-2 space-y-8">
+      
+      <div>
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+          <span>🌐</span> Global Community Incident Feed (All Areas)
+        </h2>
+        <div id="globalFeed" class="space-y-3">
+          <div class="bg-[#1e293b] p-4 rounded-xl border border-slate-800 flex justify-between items-start">
+            <div>
+              <span class="text-[10px] uppercase font-bold tracking-wider bg-amber-950/40 border border-amber-900/50 text-amber-400 px-2 py-0.5 rounded">Streetlight Malfunction</span>
+              <p class="text-xs text-slate-400 mt-2">"3 dark poles near the central junction park avenue corner."</p>
+              <span class="text-[10px] text-slate-500 block mt-2 font-mono">📍 GPS: 12.9716, 77.5946</span>
+            </div>
+            <span class="text-xs font-bold text-amber-500 px-2 py-1 bg-amber-500/10 rounded">In Progress</span>
+          </div>
+
+          <div class="bg-[#1e293b] p-4 rounded-xl border border-slate-800 flex justify-between items-start">
+            <div>
+              <span class="text-[10px] uppercase font-bold tracking-wider bg-rose-950/40 border border-rose-900/50 text-rose-400 px-2 py-0.5 rounded">Pothole Damage</span>
+              <p class="text-xs text-slate-400 mt-2">"Massive crater near the exit turning path."</p>
+              <span class="text-[10px] text-slate-500 block mt-2 font-mono">📍 GPS: 13.0827, 80.2707</span>
+            </div>
+            <span class="text-xs font-bold text-rose-500 px-2 py-1 bg-rose-500/10 rounded">Open</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+          <span>📁</span> My Personal Lodged Complaints & Real-Time Tracking
+        </h2>
+        <div id="personalFeed" class="bg-[#1e293b] rounded-xl border border-slate-800 p-2 divide-y divide-slate-800/60">
+          <p class="text-xs text-slate-500 p-4 text-center">No personal tickets filed yet. Use the sidebar module to log your first report.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bg-[#1e293b] p-6 rounded-xl border border-slate-800 shadow-md h-fit space-y-5">
+      <h2 class="text-xs font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3">🚨 Lodge New Incident</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Category</label>
+          <select id="issueType" class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+            <option>Pothole / Road Damage</option>
+            <option>Streetlight Malfunction</option>
+            <option>Garbage Accumulation</option>
+            <option>Water Leakage</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Attach Snapshot (Photo)</label>
+          <input type="file" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Issue Description (Optional)</label>
+          <input type="text" id="issueDesc" placeholder="Provide extra helpful landmarks..." class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Location Coordinates</label>
+          <div class="flex gap-2">
+            <button onclick="getLocation()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium py-2 px-3 rounded-lg transition whitespace-nowrap">
+              📍 Map GPS
+            </button>
+            <div id="geoStatus" class="text-[11px] text-slate-500 self-center font-mono truncate">No GPS locked</div>
+          </div>
+        </div>
+
+        <button onclick="submitIssue()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition text-xs tracking-wider uppercase shadow-md cursor-pointer">
+          Broadcast Official Report
+        </button>
+      </div>
+
+      <p id="msg" class="text-xs font-medium mt-4 p-3 rounded-lg hidden text-center"></p>
+    </div>
+
+  </main>
+
+  <script>
+    let coords = { latitude: 12.9716, longitude: 77.5946 }; // Sample fallback
+
+    function getLocation() {
+      const status = document.getElementById('geoStatus');
+      if (!navigator.geolocation) { return; }
+      status.innerText = "Locking...";
+      navigator.geolocation.getCurrentPosition((position) => {
+        coords.latitude = position.coords.latitude.toFixed(4);
+        coords.longitude = position.coords.longitude.toFixed(4);
+        status.innerText = `Lat: ${coords.latitude}, Lon: ${coords.longitude}`;
+      });
+    }
+
+    async function submitIssue() {
+      const msg = document.getElementById('msg');
+      const issue = document.getElementById('issueType').value;
+      const desc = document.getElementById('issueDesc').value;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/submit-complaint', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...coords, category: issue, description: desc || "No added remarks." })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          msg.className = "text-xs font-semibold mt-4 p-3 rounded-lg text-center bg-emerald-950/40 border border-emerald-900 text-emerald-400";
+          msg.innerText = `🎉 Lodged! Ticket: ${data.ticketId}`;
+          msg.classList.remove('hidden');
+
+          // Instantly inject into Personal Archive section dynamically for demonstration feedback
+          const personalFeed = document.getElementById('personalFeed');
+          if (personalFeed.innerHTML.includes("No personal tickets")) personalFeed.innerHTML = "";
+          
+          personalFeed.innerHTML = `
+            <div class="p-4 flex justify-between items-center bg-[#131c2e]/40">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-white">${data.ticketId}</span>
+                  <span class="text-[10px] text-slate-400 font-mono">(${issue})</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">"${desc || 'No descriptions added.'}"</p>
+              </div>
+              <span class="text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded">Submitted</span>
+            </div>
+          ` + personalFeed.innerHTML;
+        }
+      } catch (err) {
+        msg.className = "text-xs font-semibold mt-4 p-3 rounded-lg text-center bg-rose-950/40 border border-rose-900 text-rose-400";
+        msg.innerText = "❌ Connection offline.";
+        msg.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

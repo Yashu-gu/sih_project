@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Civic Connect | Gateway Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-[#0f172a] text-slate-200 min-h-screen flex items-center justify-center font-sans p-4 w-full">
+
+  <!-- Main Card Container -->
+  <div class="w-full max-w-xl bg-[#1e293b] rounded-xl p-8 md:p-12 shadow-xl border border-slate-800">
+    
+    <!-- STEP 1: PORTAL SELECTION CHOICE -->
+    <div id="selectionStep" class="space-y-6">
+      <div class="mb-8 text-center">
+        <h1 class="text-2xl font-black tracking-tight text-white uppercase">Civic Connect Gateway</h1>
+        <p class="text-sm text-slate-400 mt-2">Select your access tier to enter the terminal system</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Citizen Option Button -->
+        <button onclick="chooseRole('citizen')" class="p-6 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 rounded-xl text-left transition group cursor-pointer">
+          <div class="text-2xl mb-3">🌱</div>
+          <h3 class="font-bold text-white group-hover:text-emerald-400 transition text-sm uppercase tracking-wide">Citizen Portal</h3>
+          <p class="text-xs text-slate-400 mt-1">Lodge complaints, track area issues, and view municipal notices.</p>
+        </button>
+
+        <!-- Staff Option Button -->
+        <button onclick="chooseRole('staff')" class="p-6 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 rounded-xl text-left transition group cursor-pointer">
+          <div class="text-2xl mb-3">⚡</div>
+          <h3 class="font-bold text-white group-hover:text-amber-400 transition text-sm uppercase tracking-wide">Officer Console</h3>
+          <p class="text-xs text-slate-400 mt-1">Internal dispatch desk for department crews and field technicians.</p>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: PHONE/OTP AUTHENTICATION FIELDS (HIDDEN BY DEFAULT) -->
+    <div id="authStep" class="space-y-6 hidden">
+      <!-- Back Arrow Link -->
+      <button onclick="goBackToSelection()" class="text-xs text-slate-400 hover:text-white transition flex items-center gap-1 cursor-pointer font-medium">
+        ← Change Access Tier
+      </button>
+
+      <div class="text-center mb-6">
+        <h2 id="authTitle" class="text-xl font-bold text-white">Verification</h2>
+        <p id="authDesc" class="text-xs text-slate-400 mt-1"></p>
+      </div>
+
+      <!-- Phone Step Container -->
+      <div id="phoneSubStep" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Mobile Number</label>
+          <div class="relative flex rounded-lg overflow-hidden border border-slate-700 focus-within:border-emerald-500 transition">
+            <span class="bg-[#334155] px-4 py-3.5 text-sm font-semibold text-slate-300 border-r border-slate-700 select-none">+91</span>
+            <input type="tel" id="phone" required placeholder="Enter 10-digit number" class="w-full bg-[#0f172a] px-4 py-3.5 text-sm text-slate-100 focus:outline-none">
+          </div>
+        </div>
+        <button onclick="requestOTP()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3.5 px-4 rounded-lg transition duration-150 cursor-pointer text-sm font-bold uppercase tracking-wider">
+          Request Security Code
+        </button>
+      </div>
+
+      <!-- OTP Input Container (Hidden initially) -->
+      <div id="otpSubStep" class="space-y-5 hidden">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Enter 4-Digit OTP</label>
+          <input type="text" id="otp" maxlength="4" placeholder="0000" class="w-full bg-[#0f172a] border border-slate-700 rounded-lg px-4 py-3.5 text-center text-xl font-bold text-white tracking-[0.5em] focus:outline-none">
+          
+          <div class="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3 mt-3 text-xs text-slate-400 flex items-center justify-between">
+            <span>💡 Demonstration Hint:</span>
+            <span class="text-emerald-400 font-mono font-bold">Use Code: 1234</span>
+          </div>
+        </div>
+        <button onclick="verifyOTP()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3.5 px-4 rounded-lg transition duration-150 cursor-pointer text-sm font-bold uppercase tracking-wider">
+          Verify & Initialize Terminal
+        </button>
+      </div>
+
+      <p id="errorMsg" class="text-xs font-medium text-rose-400 mt-4 border border-rose-900/40 bg-rose-950/20 px-4 py-3 rounded-lg hidden text-center"></p>
+    </div>
+
+  </div>
+
+  <script>
+    let selectedRole = ''; // Can be 'citizen' or 'staff'
+
+    function chooseRole(role) {
+      selectedRole = role;
+      document.getElementById('selectionStep').classList.add('hidden');
+      document.getElementById('authStep').classList.remove('hidden');
+
+      const title = document.getElementById('authTitle');
+      const desc = document.getElementById('authDesc');
+      document.getElementById('errorMsg').classList.add('hidden');
+
+      if (role === 'citizen') {
+        title.innerText = "Citizen Verification";
+        desc.innerText = "Log in to lodge personal complaints and view notice boards.";
+      } else {
+        title.innerText = "Officer Authentication";
+        desc.innerText = "Secure credential access to the municipal operational database.";
+      }
+    }
+
+    function goBackToSelection() {
+      document.getElementById('authStep').classList.add('hidden');
+      document.getElementById('phoneSubStep').classList.remove('hidden');
+      document.getElementById('otpSubStep').classList.add('hidden');
+      document.getElementById('selectionStep').classList.remove('hidden');
+      document.getElementById('phone').value = '';
+      document.getElementById('otp').value = '';
+    }
+
+    async function requestOTP() {
+      const phone = document.getElementById('phone').value;
+      const errorMsg = document.getElementById('errorMsg');
+      
+      if(phone.length < 10) {
+        errorMsg.innerText = "Please enter a valid 10-digit mobile number.";
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:3000/api/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          errorMsg.classList.add('hidden');
+          document.getElementById('phoneSubStep').classList.add('hidden');
+          document.getElementById('otpSubStep').classList.remove('hidden');
+        } else {
+          errorMsg.innerText = data.message;
+          errorMsg.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorMsg.innerText = "Authentication pipeline server offline.";
+        errorMsg.classList.remove('hidden');
+      }
+    }
+
+    async function verifyOTP() {
+      const phone = document.getElementById('phone').value;
+      const otp = document.getElementById('otp').value;
+      const errorMsg = document.getElementById('errorMsg');
+
+      try {
+        const response = await fetch('http://localhost:3000/api/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, otp })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          localStorage.setItem('sessionToken', data.token);
+          
+          // DYNAMIC REDIRECT ACCORDING TO SELECTED ACCESS ROLE
+          if (selectedRole === 'citizen') {
+            window.location.href = 'citizen-home.html';
+          } else {
+            window.location.href = 'index.html';
+          }
+        } else {
+          errorMsg.innerText = "Invalid OTP verification response. Retry.";
+          errorMsg.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorMsg.innerText = "Verification transaction dropped.";
+        errorMsg.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
