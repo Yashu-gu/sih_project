@@ -5,55 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Citizen Hub | Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <style>
+    .goog-te-banner-frame { display: none !important; }
+    body { top: 0px !important; }
+    .goog-te-gadget { display: none !important; }
+    .skiptranslate { display: none !important; }
+  </style>
+
+  <!-- Google Translate Initialization Script -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,hi,ta,te,kn,ml,mr,bn',
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body class="bg-[#0f172a] text-slate-200 font-sans min-h-screen pb-12">
 
-  <header class="bg-[#1e293b] border-b border-slate-800 px-6 py-4 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl shadow-md">
+  <div id="google_translate_element" style="display:none;"></div>
+
+  <header class="bg-[#1e293b] border-b border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center max-w-7xl mx-auto rounded-b-xl shadow-md gap-4">
     <div class="flex items-center gap-2">
       <span class="text-emerald-500 text-xl">🌱</span>
       <h1 class="text-base font-bold text-white tracking-tight">Citizen Connect Portal</h1>
     </div>
-    <span class="text-xs font-semibold bg-slate-800 text-slate-300 px-3 py-1 rounded-full">📍 Public Account</span>
+    
+    <div class="flex items-center gap-3">
+      <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg px-2 py-1">
+        <span class="text-xs mr-2">🌐</span>
+        <select id="languageSelector" onchange="changeLanguage(this.value)" class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer">
+          <option value="en" class="bg-slate-800">English</option>
+          <option value="hi" class="bg-slate-800">हिंदी (Hindi)</option>
+          <option value="ta" class="bg-slate-800">தமிழ் (Tamil)</option>
+          <option value="te" class="bg-slate-800">తెలుగు (Telugu)</option>
+          <option value="kn" class="bg-slate-800">ಕನ್ನಡ (Kannada)</option>
+          <option value="ml" class="bg-slate-800">മലയാളം (Malayalam)</option>
+          <option value="mr" class="bg-slate-800">मराठी (Marathi)</option>
+          <option value="bn" class="bg-slate-800">বাংলা (Bengali)</option>
+        </select>
+      </div>
+
+      <span class="text-xs font-semibold bg-slate-800 text-slate-300 px-3 py-1.5 rounded-full border border-slate-700">📍 Public Account</span>
+    </div>
   </header>
 
   <main class="max-w-7xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-    
     <div class="lg:col-span-2 space-y-8">
-      
       <div>
-        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-          <span>🌐</span> Global Community Incident Feed (All Areas)
-        </h2>
-        <div id="globalFeed" class="space-y-3">
-          <div class="bg-[#1e293b] p-4 rounded-xl border border-slate-800 flex justify-between items-start">
-            <div>
-              <span class="text-[10px] uppercase font-bold tracking-wider bg-amber-950/40 border border-amber-900/50 text-amber-400 px-2 py-0.5 rounded">Streetlight Malfunction</span>
-              <p class="text-xs text-slate-400 mt-2">"3 dark poles near the central junction park avenue corner."</p>
-              <span class="text-[10px] text-slate-500 block mt-2 font-mono">📍 GPS: 12.9716, 77.5946</span>
-            </div>
-            <span class="text-xs font-bold text-amber-500 px-2 py-1 bg-amber-500/10 rounded">In Progress</span>
-          </div>
-
-          <div class="bg-[#1e293b] p-4 rounded-xl border border-slate-800 flex justify-between items-start">
-            <div>
-              <span class="text-[10px] uppercase font-bold tracking-wider bg-rose-950/40 border border-rose-900/50 text-rose-400 px-2 py-0.5 rounded">Pothole Damage</span>
-              <p class="text-xs text-slate-400 mt-2">"Massive crater near the exit turning path."</p>
-              <span class="text-[10px] text-slate-500 block mt-2 font-mono">📍 GPS: 13.0827, 80.2707</span>
-            </div>
-            <span class="text-xs font-bold text-rose-500 px-2 py-1 bg-rose-500/10 rounded">Open</span>
-          </div>
-        </div>
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">🌐 Global Community Feed</h2>
+        <div id="globalFeed" class="space-y-3"></div>
       </div>
-
-      <div>
-        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-          <span>📁</span> My Personal Lodged Complaints & Real-Time Tracking
-        </h2>
-        <div id="personalFeed" class="bg-[#1e293b] rounded-xl border border-slate-800 p-2 divide-y divide-slate-800/60">
-          <p class="text-xs text-slate-500 p-4 text-center">No personal tickets filed yet. Use the sidebar module to log your first report.</p>
-        </div>
-      </div>
-
     </div>
 
     <div class="bg-[#1e293b] p-6 rounded-xl border border-slate-800 shadow-md h-fit space-y-5">
@@ -61,98 +67,232 @@
       
       <div class="space-y-4">
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Category</label>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">1. Take / Attach Photo (Captures Location & AI Category)</label>
+          <input type="file" id="incidentImage" accept="image/*" capture="environment" onchange="capturePhotoLocation()" class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-950 file:text-emerald-400 file:border file:border-emerald-900 cursor-pointer">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Category (Auto-Categorized by AI Photo)</label>
           <select id="issueType" class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-            <option>Pothole / Road Damage</option>
-            <option>Streetlight Malfunction</option>
-            <option>Garbage Accumulation</option>
-            <option>Water Leakage</option>
+            <option value="Auto">🤖 Auto-Detect Category via AI Photo</option>
+            <option value="Pothole / Road Damage">Pothole / Road Damage</option>
+            <option value="Streetlight Malfunction">Streetlight Malfunction</option>
+            <option value="Garbage Accumulation">Garbage Accumulation</option>
+            <option value="Water Leakage">Water Leakage</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Attach Snapshot (Photo)</label>
-          <input type="file" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer">
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Issue Description (Optional)</label>
-          <input type="text" id="issueDesc" placeholder="Provide extra helpful landmarks..." class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Location Coordinates</label>
-          <div class="flex gap-2">
-            <button onclick="getLocation()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium py-2 px-3 rounded-lg transition whitespace-nowrap">
-              📍 Map GPS
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide">Issue Description</label>
+            <button onclick="startVoiceInput()" type="button" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold bg-emerald-950/50 border border-emerald-900 px-2 py-0.5 rounded cursor-pointer">
+              🎤 Voice Dictation
             </button>
-            <div id="geoStatus" class="text-[11px] text-slate-500 self-center font-mono truncate">No GPS locked</div>
+          </div>
+          <input type="text" id="issueDesc" placeholder="Describe the issue or click voice dictation..." class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Photo Location Stamp</label>
+          <div id="geoStatus" class="text-xs text-amber-400 bg-slate-900 border border-slate-800 p-2.5 rounded-lg font-mono">
+            📷 Take a photo or upload to grab exact GPS coordinates...
           </div>
         </div>
 
-        <button onclick="submitIssue()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition text-xs tracking-wider uppercase shadow-md cursor-pointer">
+        <button onclick="submitIssue()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition text-xs tracking-wider uppercase cursor-pointer">
           Broadcast Official Report
         </button>
       </div>
 
-      <p id="msg" class="text-xs font-medium mt-4 p-3 rounded-lg hidden text-center"></p>
+      <p id="msg" class="text-xs font-semibold mt-4 p-3 rounded-lg hidden text-center"></p>
     </div>
-
   </main>
 
   <script>
-    let coords = { latitude: 12.9716, longitude: 77.5946 }; // Sample fallback
+    let photoCoords = null;
+    let offlineQueue = JSON.parse(localStorage.getItem('offlineComplaints')) || [];
 
-    function getLocation() {
+    window.addEventListener('DOMContentLoaded', () => {
+      loadFeed();
+      const savedLang = localStorage.getItem('preferredLang');
+      if (savedLang) {
+        document.getElementById('languageSelector').value = savedLang;
+        triggerTranslation(savedLang);
+      }
+    });
+
+    window.addEventListener('online', syncOfflineQueue);
+
+    function changeLanguage(langCode) {
+      localStorage.setItem('preferredLang', langCode);
+      triggerTranslation(langCode);
+    }
+
+    function triggerTranslation(langCode) {
+      const checkInterval = setInterval(() => {
+        const combo = document.querySelector('.goog-te-combo');
+        if (combo && combo.options.length > 0) {
+          clearInterval(checkInterval);
+          setTimeout(() => {
+            combo.value = langCode;
+            combo.dispatchEvent(new Event('change'));
+          }, 400);
+        }
+      }, 100);
+    }
+
+    // Triggered automatically as soon as photo is taken / attached
+    function capturePhotoLocation() {
       const status = document.getElementById('geoStatus');
-      if (!navigator.geolocation) { return; }
-      status.innerText = "Locking...";
-      navigator.geolocation.getCurrentPosition((position) => {
-        coords.latitude = position.coords.latitude.toFixed(4);
-        coords.longitude = position.coords.longitude.toFixed(4);
-        status.innerText = `Lat: ${coords.latitude}, Lon: ${coords.longitude}`;
-      });
+      status.innerText = "⏳ Acquiring photo capture location...";
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            photoCoords = {
+              latitude: pos.coords.latitude.toFixed(4),
+              longitude: pos.coords.longitude.toFixed(4)
+            };
+            status.className = "text-xs text-emerald-400 bg-slate-900 border border-slate-800 p-2.5 rounded-lg font-mono";
+            status.innerText = `📍 Location Stamped: Lat ${photoCoords.latitude}, Lon ${photoCoords.longitude}`;
+          },
+          (err) => {
+            photoCoords = { latitude: "12.9716", longitude: "77.5946" };
+            status.className = "text-xs text-amber-400 bg-slate-900 border border-slate-800 p-2.5 rounded-lg font-mono";
+            status.innerText = `📍 Location Stamped (Default): Lat ${photoCoords.latitude}, Lon ${photoCoords.longitude}`;
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      }
+    }
+
+    function startVoiceInput() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Voice recognition is not supported on this browser.");
+        return;
+      }
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.onstart = () => {
+        document.getElementById('issueDesc').placeholder = "Listening...";
+      };
+      recognition.onresult = (event) => {
+        document.getElementById('issueDesc').value = event.results[0][0].transcript;
+      };
+      recognition.start();
+    }
+
+    async function loadFeed() {
+      try {
+        const res = await fetch('http://localhost:3000/api/complaints');
+        const data = await res.json();
+        if (data.success) {
+          const feed = document.getElementById('globalFeed');
+          feed.innerHTML = data.complaints.map(item => `
+            <div class="bg-[#1e293b] p-4 rounded-xl border border-slate-800 flex justify-between items-start">
+              <div>
+                <span class="text-[10px] uppercase font-bold tracking-wider bg-amber-950/40 border border-amber-900/50 text-amber-400 px-2 py-0.5 rounded">${item.category}</span>
+                <p class="text-xs text-slate-300 mt-2">"${item.description}"</p>
+                <span class="text-[10px] text-slate-500 block mt-2 font-mono">📍 Stamped Location: ${item.coords ? item.coords.latitude : item.latitude}, ${item.coords ? item.coords.longitude : item.longitude}</span>
+              </div>
+              <span class="text-xs font-bold text-emerald-400 px-2 py-1 bg-emerald-500/10 rounded">${item.status}</span>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error("Failed to load feed", err);
+      }
     }
 
     async function submitIssue() {
       const msg = document.getElementById('msg');
       const issue = document.getElementById('issueType').value;
       const desc = document.getElementById('issueDesc').value;
+      const imageInput = document.getElementById('incidentImage');
+
+      msg.classList.add('hidden');
+
+      // Fallback location if user didn't take a photo first
+      if (!photoCoords) {
+        photoCoords = { latitude: "12.9716", longitude: "77.5946" };
+      }
+
+      // Convert attached photo to Base64
+      let imageBase64 = null;
+      if (imageInput && imageInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.readAsDataURL(imageInput.files[0]);
+        await new Promise(resolve => reader.onload = () => {
+          imageBase64 = reader.result;
+          resolve();
+        });
+      }
+
+      const payload = {
+        category: issue,
+        description: desc,
+        coords: photoCoords,
+        image: imageBase64
+      };
+
+      // Handle Offline Mode
+      if (!navigator.onLine) {
+        offlineQueue.push(payload);
+        localStorage.setItem('offlineComplaints', JSON.stringify(offlineQueue));
+        msg.className = "text-xs font-semibold mt-4 p-3 rounded-lg text-center bg-amber-950/40 border border-amber-900 text-amber-400";
+        msg.innerText = "📶 Saved locally with GPS location. Report will automatically sync when connected!";
+        msg.classList.remove('hidden');
+        resetForm();
+        return;
+      }
+
+      sendComplaintToServer(payload);
+    }
+
+    async function sendComplaintToServer(payload) {
+      const msg = document.getElementById('msg');
+      msg.className = "text-xs font-semibold mt-4 p-3 rounded-lg text-center bg-slate-800 text-slate-300";
+      msg.innerText = "🤖 AI Analyzing photo & verifying authenticity...";
+      msg.classList.remove('hidden');
 
       try {
         const response = await fetch('http://localhost:3000/api/submit-complaint', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...coords, category: issue, description: desc || "No added remarks." })
+          body: JSON.stringify(payload)
         });
         const data = await response.json();
 
         if (data.success) {
           msg.className = "text-xs font-semibold mt-4 p-3 rounded-lg text-center bg-emerald-950/40 border border-emerald-900 text-emerald-400";
-          msg.innerText = `🎉 Lodged! Ticket: ${data.ticketId}`;
-          msg.classList.remove('hidden');
-
-          // Instantly inject into Personal Archive section dynamically for demonstration feedback
-          const personalFeed = document.getElementById('personalFeed');
-          if (personalFeed.innerHTML.includes("No personal tickets")) personalFeed.innerHTML = "";
-          
-          personalFeed.innerHTML = `
-            <div class="p-4 flex justify-between items-center bg-[#131c2e]/40">
-              <div>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-white">${data.ticketId}</span>
-                  <span class="text-[10px] text-slate-400 font-mono">(${issue})</span>
-                </div>
-                <p class="text-xs text-slate-400 mt-1">"${desc || 'No descriptions added.'}"</p>
-              </div>
-              <span class="text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded">Submitted</span>
-            </div>
-          ` + personalFeed.innerHTML;
+          msg.innerText = `🎉 Lodged! Ticket ID: ${data.ticketId} — AI Categorized as: [${data.ticket.category}]`;
+          resetForm();
+          loadFeed();
+        } else {
+          msg.className = "text-xs font-semibold mt-4 p-3 rounded-lg text-center bg-rose-950/40 border border-rose-900 text-rose-400";
+          msg.innerText = `❌ ${data.error || 'Submission rejected.'}`;
         }
       } catch (err) {
         msg.className = "text-xs font-semibold mt-4 p-3 rounded-lg text-center bg-rose-950/40 border border-rose-900 text-rose-400";
-        msg.innerText = "❌ Connection offline.";
-        msg.classList.remove('hidden');
+        msg.innerText = "❌ Server error or network connection lost.";
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('issueDesc').value = '';
+      const imageInput = document.getElementById('incidentImage');
+      if (imageInput) imageInput.value = '';
+      photoCoords = null;
+      document.getElementById('geoStatus').className = "text-xs text-amber-400 bg-slate-900 border border-slate-800 p-2.5 rounded-lg font-mono";
+      document.getElementById('geoStatus').innerText = "📷 Take a photo or upload to grab exact GPS coordinates...";
+    }
+
+    function syncOfflineQueue() {
+      if (offlineQueue.length > 0) {
+        offlineQueue.forEach(payload => sendComplaintToServer(payload));
+        offlineQueue = [];
+        localStorage.removeItem('offlineComplaints');
       }
     }
   </script>

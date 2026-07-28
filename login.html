@@ -3,177 +3,206 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Civic Connect | Gateway Portal</title>
+  <title>Civic Portal | Login</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  
+  <style>
+    /* Hide default Google Translate bar and branding */
+    .goog-te-banner-frame { display: none !important; }
+    body { top: 0px !important; }
+    .goog-te-gadget { display: none !important; }
+    .skiptranslate { display: none !important; }
+  </style>
+
+  <!-- Google Translate Initialization Script -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,hi,ta,te,kn,ml,mr,bn',
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
-<body class="bg-[#0f172a] text-slate-200 min-h-screen flex items-center justify-center font-sans p-4 w-full">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex items-center justify-center font-sans p-4">
 
-  <!-- Main Card Container -->
-  <div class="w-full max-w-xl bg-[#1e293b] rounded-xl p-8 md:p-12 shadow-xl border border-slate-800">
+  <!-- Hidden anchor for Google Translate -->
+  <div id="google_translate_element" style="display:none;"></div>
+
+  <div class="w-full max-w-md bg-white rounded-xl p-8 shadow-md border border-slate-200">
     
-    <!-- STEP 1: PORTAL SELECTION CHOICE -->
-    <div id="selectionStep" class="space-y-6">
-      <div class="mb-8 text-center">
-        <h1 class="text-2xl font-black tracking-tight text-white uppercase">Civic Connect Gateway</h1>
-        <p class="text-sm text-slate-400 mt-2">Select your access tier to enter the terminal system</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Citizen Option Button -->
-        <button onclick="chooseRole('citizen')" class="p-6 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 rounded-xl text-left transition group cursor-pointer">
-          <div class="text-2xl mb-3">🌱</div>
-          <h3 class="font-bold text-white group-hover:text-emerald-400 transition text-sm uppercase tracking-wide">Citizen Portal</h3>
-          <p class="text-xs text-slate-400 mt-1">Lodge complaints, track area issues, and view municipal notices.</p>
-        </button>
-
-        <!-- Staff Option Button -->
-        <button onclick="chooseRole('staff')" class="p-6 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 rounded-xl text-left transition group cursor-pointer">
-          <div class="text-2xl mb-3">⚡</div>
-          <h3 class="font-bold text-white group-hover:text-amber-400 transition text-sm uppercase tracking-wide">Officer Console</h3>
-          <p class="text-xs text-slate-400 mt-1">Internal dispatch desk for department crews and field technicians.</p>
-        </button>
+    <!-- Language Selector Header -->
+    <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+      <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Language</span>
+      <div class="flex items-center bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1">
+        <span class="text-xs mr-2">🌐</span>
+        <select id="languageSelector" onchange="changeLanguage(this.value)" class="bg-transparent text-xs text-slate-700 font-medium focus:outline-none cursor-pointer">
+          <option value="en">English</option>
+          <option value="hi">हिंदी (Hindi)</option>
+          <option value="ta">தமிழ் (Tamil)</option>
+          <option value="te">తెలుగు (Telugu)</option>
+          <option value="kn">ಕನ್ನಡ (Kannada)</option>
+          <option value="ml">മലയാളം (Malayalam)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="bn">বাংলা (Bengali)</option>
+        </select>
       </div>
     </div>
 
-    <!-- STEP 2: PHONE/OTP AUTHENTICATION FIELDS (HIDDEN BY DEFAULT) -->
-    <div id="authStep" class="space-y-6 hidden">
-      <!-- Back Arrow Link -->
-      <button onclick="goBackToSelection()" class="text-xs text-slate-400 hover:text-white transition flex items-center gap-1 cursor-pointer font-medium">
-        ← Change Access Tier
+    <div class="mb-6 text-center">
+      <h1 id="card-title" class="text-2xl font-bold text-slate-900">Civic Portal Login</h1>
+      <p id="card-desc" class="text-sm text-slate-500 mt-1">Select your portal access level to continue.</p>
+    </div>
+
+    <!-- Step 1: Role Selection -->
+    <div id="step-role" class="space-y-3">
+      <button onclick="selectRole('citizen')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg transition text-sm cursor-pointer">
+        Login as Citizen
+      </button>
+      <button onclick="selectRole('staff')" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 rounded-lg transition text-sm cursor-pointer">
+        Login as Staff Member
       </button>
 
-      <div class="text-center mb-6">
-        <h2 id="authTitle" class="text-xl font-bold text-white">Verification</h2>
-        <p id="authDesc" class="text-xs text-slate-400 mt-1"></p>
-      </div>
-
-      <!-- Phone Step Container -->
-      <div id="phoneSubStep" class="space-y-5">
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Mobile Number</label>
-          <div class="relative flex rounded-lg overflow-hidden border border-slate-700 focus-within:border-emerald-500 transition">
-            <span class="bg-[#334155] px-4 py-3.5 text-sm font-semibold text-slate-300 border-r border-slate-700 select-none">+91</span>
-            <input type="tel" id="phone" required placeholder="Enter 10-digit number" class="w-full bg-[#0f172a] px-4 py-3.5 text-sm text-slate-100 focus:outline-none">
-          </div>
-        </div>
-        <button onclick="requestOTP()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3.5 px-4 rounded-lg transition duration-150 cursor-pointer text-sm font-bold uppercase tracking-wider">
-          Request Security Code
+      <!-- Department Selector (Revealed on selecting Staff) -->
+      <div id="staffDeptContainer" class="hidden mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
+        <label class="block text-xs font-semibold uppercase text-slate-600">Assigned Department</label>
+        <select id="staffDept" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600 cursor-pointer">
+          <option value="Pothole / Road Damage">Pothole / Road Damage</option>
+          <option value="Streetlight Malfunction">Streetlight Malfunction</option>
+          <option value="Garbage Accumulation">Garbage Accumulation</option>
+          <option value="Water Leakage">Water Leakage</option>
+        </select>
+        <button onclick="proceedToPhoneStep()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-lg transition text-xs cursor-pointer">
+          Confirm Department & Continue
         </button>
       </div>
-
-      <!-- OTP Input Container (Hidden initially) -->
-      <div id="otpSubStep" class="space-y-5 hidden">
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Enter 4-Digit OTP</label>
-          <input type="text" id="otp" maxlength="4" placeholder="0000" class="w-full bg-[#0f172a] border border-slate-700 rounded-lg px-4 py-3.5 text-center text-xl font-bold text-white tracking-[0.5em] focus:outline-none">
-          
-          <div class="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3 mt-3 text-xs text-slate-400 flex items-center justify-between">
-            <span>💡 Demonstration Hint:</span>
-            <span class="text-emerald-400 font-mono font-bold">Use Code: 1234</span>
-          </div>
-        </div>
-        <button onclick="verifyOTP()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3.5 px-4 rounded-lg transition duration-150 cursor-pointer text-sm font-bold uppercase tracking-wider">
-          Verify & Initialize Terminal
-        </button>
-      </div>
-
-      <p id="errorMsg" class="text-xs font-medium text-rose-400 mt-4 border border-rose-900/40 bg-rose-950/20 px-4 py-3 rounded-lg hidden text-center"></p>
     </div>
 
+    <!-- Step 2: Phone Input -->
+    <div id="step-phone" class="space-y-4 hidden">
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-600 mb-2">Mobile Number</label>
+        <div class="relative flex rounded-lg overflow-hidden border border-slate-300 focus-within:border-emerald-600 transition">
+          <span class="bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-500 border-r border-slate-300 select-none">+91</span>
+          <input type="tel" id="phone" value="9876543210" maxlength="10" class="w-full bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none">
+        </div>
+      </div>
+      <button onclick="requestOTP()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-lg transition text-sm cursor-pointer">
+        Send Access Code
+      </button>
+    </div>
+
+    <!-- Step 3: OTP Verification -->
+    <div id="step-otp" class="space-y-4 hidden">
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-600 mb-2">4-Digit Security Code</label>
+        <input type="text" id="otp" maxlength="4" placeholder="0000" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-center text-xl font-bold text-slate-900 tracking-[0.5em] focus:outline-none focus:border-emerald-600 transition">
+        <div class="bg-slate-100 rounded-lg p-3 mt-2 text-xs text-slate-600 flex justify-between">
+          <span>💡 Demo Code:</span>
+          <span class="text-emerald-600 font-bold">1234</span>
+        </div>
+      </div>
+      <button onclick="verifyOTP()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg transition text-sm cursor-pointer">
+        Authenticate & Enter
+      </button>
+    </div>
+
+    <p id="errorMsg" class="text-xs font-medium text-rose-600 mt-4 text-center hidden"></p>
   </div>
 
   <script>
-    let selectedRole = ''; // Can be 'citizen' or 'staff'
+    let userRole = 'citizen';
 
-    function chooseRole(role) {
-      selectedRole = role;
-      document.getElementById('selectionStep').classList.add('hidden');
-      document.getElementById('authStep').classList.remove('hidden');
+    // On page load, apply language
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedLang = localStorage.getItem('preferredLang');
+      if (savedLang) {
+        document.getElementById('languageSelector').value = savedLang;
+        triggerTranslation(savedLang);
+      }
+    });
 
-      const title = document.getElementById('authTitle');
-      const desc = document.getElementById('authDesc');
-      document.getElementById('errorMsg').classList.add('hidden');
+    // When dropdown is changed
+    function changeLanguage(langCode) {
+      localStorage.setItem('preferredLang', langCode);
+      triggerTranslation(langCode);
+    }
 
-      if (role === 'citizen') {
-        title.innerText = "Citizen Verification";
-        desc.innerText = "Log in to lodge personal complaints and view notice boards.";
+    // Safely trigger Google Translate
+    function triggerTranslation(langCode) {
+      const checkInterval = setInterval(() => {
+        const combo = document.querySelector('.goog-te-combo');
+        if (combo && combo.options.length > 0) {
+          clearInterval(checkInterval);
+          setTimeout(() => {
+            combo.value = langCode;
+            combo.dispatchEvent(new Event('change'));
+          }, 400);
+        }
+      }, 100);
+    }
+
+    function selectRole(role) {
+      userRole = role;
+      if (role === 'staff') {
+        document.getElementById('staffDeptContainer').classList.remove('hidden');
       } else {
-        title.innerText = "Officer Authentication";
-        desc.innerText = "Secure credential access to the municipal operational database.";
+        proceedToPhoneStep();
       }
     }
 
-    function goBackToSelection() {
-      document.getElementById('authStep').classList.add('hidden');
-      document.getElementById('phoneSubStep').classList.remove('hidden');
-      document.getElementById('otpSubStep').classList.add('hidden');
-      document.getElementById('selectionStep').classList.remove('hidden');
-      document.getElementById('phone').value = '';
-      document.getElementById('otp').value = '';
+    function proceedToPhoneStep() {
+      document.getElementById('step-role').classList.add('hidden');
+      document.getElementById('step-phone').classList.remove('hidden');
+      document.getElementById('card-title').innerText = userRole === 'citizen' ? 'Citizen Verification' : 'Staff Access Check';
     }
 
-    async function requestOTP() {
+    function requestOTP() {
       const phone = document.getElementById('phone').value;
-      const errorMsg = document.getElementById('errorMsg');
-      
-      if(phone.length < 10) {
-        errorMsg.innerText = "Please enter a valid 10-digit mobile number.";
-        errorMsg.classList.remove('hidden');
+      if (phone.length < 10) {
+        showError("Enter a valid 10-digit number.");
         return;
       }
-
-      try {
-        const response = await fetch('http://localhost:3000/api/send-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone })
-        });
-        const data = await response.json();
-
-        if (data.success) {
-          errorMsg.classList.add('hidden');
-          document.getElementById('phoneSubStep').classList.add('hidden');
-          document.getElementById('otpSubStep').classList.remove('hidden');
-        } else {
-          errorMsg.innerText = data.message;
-          errorMsg.classList.remove('hidden');
-        }
-      } catch (err) {
-        errorMsg.innerText = "Authentication pipeline server offline.";
-        errorMsg.classList.remove('hidden');
-      }
+      document.getElementById('step-phone').classList.add('hidden');
+      document.getElementById('step-otp').classList.remove('hidden');
+      hideError();
     }
 
     async function verifyOTP() {
-      const phone = document.getElementById('phone').value;
       const otp = document.getElementById('otp').value;
-      const errorMsg = document.getElementById('errorMsg');
-
       try {
         const response = await fetch('http://localhost:3000/api/verify-otp', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone, otp })
+          body: JSON.stringify({ otp })
         });
         const data = await response.json();
 
         if (data.success) {
-          localStorage.setItem('sessionToken', data.token);
-          
-          // DYNAMIC REDIRECT ACCORDING TO SELECTED ACCESS ROLE
-          if (selectedRole === 'citizen') {
-            window.location.href = 'citizen-home.html';
-          } else {
-            window.location.href = 'index.html';
+          localStorage.setItem('userRole', userRole);
+          if (userRole === 'staff') {
+            const chosenDept = document.getElementById('staffDept').value;
+            localStorage.setItem('staffDept', chosenDept);
           }
+          window.location.href = userRole === 'citizen' ? 'citizen-home.html' : 'staff.html';
         } else {
-          errorMsg.innerText = "Invalid OTP verification response. Retry.";
-          errorMsg.classList.remove('hidden');
+          showError(data.error || "Invalid OTP code.");
         }
       } catch (err) {
-        errorMsg.innerText = "Verification transaction dropped.";
-        errorMsg.classList.remove('hidden');
+        showError("Backend connection failed. Make sure server.js is running.");
       }
+    }
+
+    function showError(msg) {
+      const err = document.getElementById('errorMsg');
+      err.innerText = msg;
+      err.classList.remove('hidden');
+    }
+
+    function hideError() {
+      document.getElementById('errorMsg').classList.add('hidden');
     }
   </script>
 </body>

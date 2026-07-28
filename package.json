@@ -1,7 +1,27 @@
 {
+  "name": "sih_project",
+  "version": "1.0.0",
+  "type": "module",
   "dependencies": {
+    "@google/genai": "latest",
     "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "mongoose": "^9.7.3"
-  }
+    "dotenv": "latest",
+    "express": "^5.2.1"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "main": "Ticket.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yashu-gu/sih_project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Yashu-gu/sih_project/issues"
+  },
+  "homepage": "https://github.com/Yashu-gu/sih_project#readme",
+  "description": ""
 }
