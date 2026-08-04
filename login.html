@@ -7,7 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   
   <style>
-    /* Hide default Google Translate bar and branding */
     .goog-te-banner-frame { display: none !important; }
     body { top: 0px !important; }
     .goog-te-gadget { display: none !important; }
@@ -28,12 +27,10 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex items-center justify-center font-sans p-4">
 
-  <!-- Hidden anchor for Google Translate -->
   <div id="google_translate_element" style="display:none;"></div>
 
   <div class="w-full max-w-md bg-white rounded-xl p-8 shadow-md border border-slate-200">
     
-    <!-- Language Selector Header -->
     <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
       <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Language</span>
       <div class="flex items-center bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1">
@@ -65,17 +62,37 @@
         Login as Staff Member
       </button>
 
-      <!-- Department Selector (Revealed on selecting Staff) -->
+      <!-- MODIFIED: Staff Details Step with Ward Selection & Employee ID -->
       <div id="staffDeptContainer" class="hidden mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
-        <label class="block text-xs font-semibold uppercase text-slate-600">Assigned Department</label>
-        <select id="staffDept" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600 cursor-pointer">
-          <option value="Pothole / Road Damage">Pothole / Road Damage</option>
-          <option value="Streetlight Malfunction">Streetlight Malfunction</option>
-          <option value="Garbage Accumulation">Garbage Accumulation</option>
-          <option value="Water Leakage">Water Leakage</option>
-        </select>
-        <button onclick="proceedToPhoneStep()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-lg transition text-xs cursor-pointer">
-          Confirm Department & Continue
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Employee ID</label>
+          <input type="text" id="staffEmpId" placeholder="e.g. EMP-201" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Assigned Department</label>
+          <select id="staffDept" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600 cursor-pointer">
+            <option value="Roads & Public Works (PWD)">Roads & Public Works (PWD)</option>
+            <option value="Waste Management & Sanitation">Waste Management & Sanitation</option>
+            <option value="Water Supply & Sewage">Water Supply & Sewage</option>
+            <option value="Electrical & Streetlighting">Electrical & Streetlighting</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Assigned Ward Location</label>
+          <select id="staffWard" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600 cursor-pointer">
+            <option value="Koramangala">Koramangala (Ward 151)</option>
+            <option value="Indiranagar">Indiranagar (Ward 112)</option>
+            <option value="Whitefield">Whitefield (Ward 84)</option>
+            <option value="Jayanagar">Jayanagar (Ward 153)</option>
+            <option value="HSR Layout">HSR Layout (Ward 174)</option>
+            <option value="All">All Wards (Department Head)</option>
+          </select>
+        </div>
+
+        <button onclick="confirmStaffDetails()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-lg transition text-xs cursor-pointer">
+          Confirm Staff Details & Continue
         </button>
       </div>
     </div>
@@ -115,7 +132,6 @@
   <script>
     let userRole = 'citizen';
 
-    // On page load, apply language
     window.addEventListener('DOMContentLoaded', () => {
       const savedLang = localStorage.getItem('preferredLang');
       if (savedLang) {
@@ -124,13 +140,11 @@
       }
     });
 
-    // When dropdown is changed
     function changeLanguage(langCode) {
       localStorage.setItem('preferredLang', langCode);
       triggerTranslation(langCode);
     }
 
-    // Safely trigger Google Translate
     function triggerTranslation(langCode) {
       const checkInterval = setInterval(() => {
         const combo = document.querySelector('.goog-te-combo');
@@ -153,6 +167,17 @@
       }
     }
 
+    // MODIFIED: Function to handle Staff Details Validation & Store local variables
+    function confirmStaffDetails() {
+      const empId = document.getElementById('staffEmpId').value.trim();
+      if (!empId) {
+        showError("Please enter your Employee ID.");
+        return;
+      }
+      hideError();
+      proceedToPhoneStep();
+    }
+
     function proceedToPhoneStep() {
       document.getElementById('step-role').classList.add('hidden');
       document.getElementById('step-phone').classList.remove('hidden');
@@ -169,7 +194,6 @@
       document.getElementById('step-otp').classList.remove('hidden');
       hideError();
     }
-
     async function verifyOTP() {
       const otp = document.getElementById('otp').value;
       try {
@@ -182,11 +206,25 @@
 
         if (data.success) {
           localStorage.setItem('userRole', userRole);
+          
           if (userRole === 'staff') {
             const chosenDept = document.getElementById('staffDept').value;
+            const chosenWard = document.getElementById('staffWard').value;
+            const empId = document.getElementById('staffEmpId').value.trim();
+            
             localStorage.setItem('staffDept', chosenDept);
+            localStorage.setItem('staffWard', chosenWard);
+            localStorage.setItem('staffEmpId', empId);
+
+            // REDIRECT LOGIC FOR DEPARTMENT HEAD vs FIELD STAFF
+            if (chosenWard === 'All') {
+              window.location.href = 'dept-head.html'; // Dedicated Department Head Page
+            } else {
+              window.location.href = 'staff.html';     // Regular Field Staff Page
+            }
+          } else {
+            window.location.href = 'citizen-home.html';
           }
-          window.location.href = userRole === 'citizen' ? 'citizen-home.html' : 'staff.html';
         } else {
           showError(data.error || "Invalid OTP code.");
         }
@@ -207,3 +245,4 @@
   </script>
 </body>
 </html>
+

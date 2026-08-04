@@ -1,340 +1,528 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff Control Panel</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Portal - Citizen Connect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen p-6">
+<body class="bg-[#0f172a] text-slate-100 min-h-screen">
 
-  <div class="max-w-6xl mx-auto space-y-6">
-    <header class="flex justify-between items-center border-b border-slate-800 pb-4">
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-indigo-500/30">
+        CC
+      </div>
       <div>
-        <h1 class="text-xl font-bold text-white">🏢 Municipal Staff Live Dispatch Dashboard</h1>
-        <p id="deptBadge" class="text-xs text-emerald-400 font-semibold mt-1">
-          Showing Queue for: <span id="currentDeptText" class="underline">All Departments</span>
-        </p>
-      </div>
-      <div class="flex items-center gap-3">
-        <select id="filterDeptSelect" onchange="changeFilterDept(this.value)" class="bg-slate-800 text-xs text-slate-300 border border-slate-700 rounded-lg px-3 py-2 focus:outline-none cursor-pointer">
-          <option value="All">All Departments</option>
-          <option value="Pothole / Road Damage">Pothole / Road Damage</option>
-          <option value="Streetlight Malfunction">Streetlight Malfunction</option>
-          <option value="Garbage Accumulation">Garbage Accumulation</option>
-          <option value="Water Leakage">Water Leakage</option>
-        </select>
-        <button onclick="fetchStaffData()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-2 rounded-lg text-slate-300 transition cursor-pointer">
-          🔄 Refresh Live Stream
-        </button>
-      </div>
-    </header>
-
-    <!-- Full Citizen-Style Complaint Recording Form for Staff -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 p-5 space-y-4 shadow-md">
-      <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-700 pb-3">🚨 Lodge Incident via Staff Portal</h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Left Column: Photo & Location -->
-        <div class="space-y-4">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">1. Take / Attach Photo (Captures Location & AI Category)</label>
-            <input type="file" id="staffIncidentImage" accept="image/*" capture="environment" onchange="capturePhotoLocation()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-950 file:text-emerald-400 file:border file:border-emerald-900 cursor-pointer">
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Photo Location Stamp</label>
-            <div id="staffGeoStatus" class="text-xs text-amber-400 bg-slate-900 border border-slate-700 p-2.5 rounded-lg font-mono">
-              📷 Take a photo or upload to grab exact GPS coordinates...
-            </div>
-          </div>
-        </div>
-
-        <!-- Right Column: Category, Description & Submit -->
-        <div class="space-y-4">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Category (Auto-Categorized by AI Photo)</label>
-            <select id="staffIssueType" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-              <option value="Auto">🤖 Auto-Detect Category via AI Photo</option>
-              <option value="Pothole / Road Damage">Pothole / Road Damage</option>
-              <option value="Streetlight Malfunction">Streetlight Malfunction</option>
-              <option value="Garbage Accumulation">Garbage Accumulation</option>
-              <option value="Water Leakage">Water Leakage</option>
-            </select>
-          </div>
-
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide">Issue Description</label>
-              <button onclick="startVoiceInput()" type="button" class="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold bg-emerald-950/50 border border-emerald-900 px-2 py-0.5 rounded cursor-pointer">
-                🎤 Voice Dictation
-              </button>
-            </div>
-            <input type="text" id="staffIssueDesc" placeholder="Describe the issue or click voice dictation..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-          </div>
+        <h1 class="text-lg font-bold leading-none text-slate-100">Staff Portal</h1>
+        <div class="flex items-center gap-2 mt-1">
+          <span class="text-xs text-slate-400">Logged in Department:</span>
+          <!-- Active Staff Department Selector -->
+          <select id="staff-dept-select" onchange="switchStaffDepartment()" class="bg-slate-800 border border-slate-700 text-xs text-indigo-300 font-bold rounded-lg px-2 py-0.5 focus:outline-none focus:border-indigo-500">
+            <option value="Electrical & Streetlighting">Electrical & Streetlighting</option>
+            <option value="Roads & Public Works (PWD)">Roads & Public Works (PWD)</option>
+            <option value="Water Supply & Sewage">Water Supply & Sewage</option>
+            <option value="Waste Management & Sanitation">Waste Management & Sanitation</option>
+          </select>
         </div>
       </div>
-
-      <button onclick="submitStaffIssue()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition text-xs tracking-wider uppercase cursor-pointer">
-        Broadcast Official Report
-      </button>
-
-      <p id="staffMsg" class="text-xs font-semibold mt-2 p-2.5 rounded-lg hidden text-center"></p>
     </div>
 
-    <!-- Live Incident Stream with SLA Timer & Action Tools -->
-    <div class="bg-slate-800 rounded-xl border border-slate-700 p-4">
-      <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Incoming Live Incidents</h2>
-      <div id="staffTicketsList" class="space-y-4">
-        <p class="text-xs text-slate-400">Loading incoming tickets...</p>
+    <div class="flex items-center space-x-4">
+      <button onclick="openComplaintModal()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/20">
+        <span>➕</span> Register New Field Issue
+      </button>
+
+      <button onclick="fetchComplaints()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition border border-slate-700">
+        🔄 Refresh
+      </button>
+
+      <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl px-3 py-1.5 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-xs font-semibold text-slate-300" id="staff-id-display">Officer ID: STF-8842</span>
       </div>
+      
+      <a href="login.html" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg text-xs font-semibold border border-rose-500/20 transition">
+        Logout
+      </a>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="max-w-7xl mx-auto px-6 pt-6">
+    <div class="flex border-b border-slate-800 space-x-2">
+      <button id="tab-my-issues" onclick="switchTab('my_issues')" class="px-4 py-2.5 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 transition flex items-center gap-2">
+        <span>👤</span> My Registered Issues <span id="badge-my-count" class="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full text-[10px]">0</span>
+      </button>
+      <button id="tab-dept-action" onclick="switchTab('dept_action')" class="px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2">
+        <span>🛠️</span> Actionable Department Queue <span id="badge-dept-count" class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full text-[10px]">0</span>
+      </button>
+      <button id="tab-area-all" onclick="switchTab('area_all')" class="px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2">
+        <span>🌐</span> All Area Issues (Read-Only) <span id="badge-all-count" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full text-[10px]">0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main View Container -->
+  <div class="max-w-7xl mx-auto p-6">
+    
+    <!-- Tab Description Header -->
+    <div class="mb-6 bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+      <div>
+        <h2 id="view-title" class="text-sm font-bold text-slate-100">My Registered Issues</h2>
+        <p id="view-description" class="text-xs text-slate-400 mt-0.5">Issues reported directly by Officer STF-8842 formatted like citizen tracking view.</p>
+      </div>
+      <div id="view-status-pill" class="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold">
+        Officer Tracking
+      </div>
+    </div>
+
+    <!-- Feed Container -->
+    <div id="feed-container" class="space-y-4">
+      <div class="p-8 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-2xl">Loading tickets...</div>
+    </div>
+
+  </div>
+
+  <!-- Register Complaint Modal -->
+  <div id="register-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <span>📸</span> Field Incident Registration
+        </h3>
+        <button onclick="closeComplaintModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <form id="staff-complaint-form" onsubmit="handleCitizenComplaintSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Photo Evidence <span class="text-xs font-normal text-indigo-400">(Triggers Auto-GPS & AI Category)</span>
+          </label>
+          <input type="file" id="citizen-image" accept="image/*" required onchange="handleImageCaptured()" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-indigo-400 hover:file:bg-slate-700 cursor-pointer"/>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Contact Phone</label>
+          <input type="tel" id="citizen-phone" placeholder="+91 9876543210" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Location Details</label>
+          <div class="flex gap-2">
+            <input type="text" id="citizen-location" required placeholder="Street / Landmark / GPS Coordinates" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" />
+            <button type="button" onclick="getGPSLocation()" class="px-3 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 rounded-xl text-xs font-bold border border-indigo-500/30 shrink-0 flex items-center gap-1">
+              📍 GPS
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Description</label>
+          <textarea id="citizen-description" rows="3" placeholder="Describe the issue observed in field..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <div id="modal-status" class="hidden text-xs p-2.5 rounded-xl"></div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeComplaintModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition">Cancel</button>
+          <button type="submit" id="submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/20">Submit Incident</button>
+        </div>
+      </form>
     </div>
   </div>
 
   <script>
-    let activeDept = localStorage.getItem('staffDept') || 'All';
-    let photoCoords = null;
-    let localSlaExtensions = JSON.parse(localStorage.getItem('slaExtensions')) || {};
-    let offlineQueue = JSON.parse(localStorage.getItem('offlineComplaints')) || [];
+    const API_BASE = 'http://localhost:3000/api';
+    const CURRENT_OFFICER_ID = 'STF-8842';
+    
+    let allComplaints = [];
+    let currentTab = 'my_issues';
 
     window.addEventListener('DOMContentLoaded', () => {
-      const select = document.getElementById('filterDeptSelect');
-      if (select) select.value = activeDept;
-      updateDeptBadge();
-      fetchStaffData();
+      const savedDept = localStorage.getItem('staffDept');
+      if (savedDept) {
+        const deptSelect = document.getElementById('staff-dept-select');
+        if ([...deptSelect.options].some(o => o.value === savedDept)) {
+          deptSelect.value = savedDept;
+        }
+      }
+      fetchComplaints();
     });
 
-    window.addEventListener('online', syncOfflineQueue);
-
-    function changeFilterDept(dept) {
-      activeDept = dept;
-      localStorage.setItem('staffDept', dept);
-      updateDeptBadge();
-      fetchStaffData();
+    function getLoggedDepartment() {
+      return document.getElementById('staff-dept-select').value;
     }
 
-    function updateDeptBadge() {
-      document.getElementById('currentDeptText').innerText = activeDept;
+    function switchStaffDepartment() {
+      localStorage.setItem('staffDept', getLoggedDepartment());
+      renderCurrentTab();
     }
 
-    // Capture GPS coordinates immediately when photo is selected/taken
-    function capturePhotoLocation() {
-      const status = document.getElementById('staffGeoStatus');
-      status.innerText = "⏳ Acquiring photo capture location...";
-      
+    async function fetchComplaints() {
+      try {
+        const res = await fetch(`${API_BASE}/complaints`);
+        const data = await res.json();
+        
+        if (data.success) {
+          allComplaints = data.complaints;
+          updateBadges();
+          renderCurrentTab();
+        }
+      } catch (err) {
+        console.error('Failed to load tickets:', err);
+        document.getElementById('feed-container').innerHTML = `
+          <div class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-center text-xs">
+            Unable to connect to backend server at ${API_BASE}.
+          </div>`;
+      }
+    }
+
+    function updateBadges() {
+      const myCount = allComplaints.filter(t => (t.officerId === CURRENT_OFFICER_ID || t.assigned_to_employee_id === CURRENT_OFFICER_ID)).length;
+      const loggedDept = getLoggedDepartment();
+      const deptCount = allComplaints.filter(t => (t.department === loggedDept || t.department_id === loggedDept) && t.status !== 'Resolved').length;
+
+      document.getElementById('badge-my-count').innerText = myCount;
+      document.getElementById('badge-dept-count').innerText = deptCount;
+      document.getElementById('badge-all-count').innerText = allComplaints.length;
+    }
+
+    function switchTab(tabKey) {
+      currentTab = tabKey;
+
+      ['my_issues', 'dept_action', 'area_all'].forEach(k => {
+        const btn = document.getElementById(`tab-${k.replace('_', '-')}`);
+        if (k === tabKey) {
+          btn.className = 'px-4 py-2.5 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 transition flex items-center gap-2';
+        } else {
+          btn.className = 'px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2';
+        }
+      });
+
+      renderCurrentTab();
+    }
+
+    function renderCurrentTab() {
+      updateBadges();
+      const loggedDept = getLoggedDepartment();
+
+      if (currentTab === 'my_issues') {
+        document.getElementById('view-title').innerText = "My Filed Field Reports";
+        document.getElementById('view-description').innerText = "Personal log of issues filed under Officer ID STF-8842.";
+        document.getElementById('view-status-pill').innerText = "Citizen View Mode";
+
+        const myComplaints = allComplaints.filter(t => (t.officerId === CURRENT_OFFICER_ID || t.assigned_to_employee_id === CURRENT_OFFICER_ID));
+        renderCitizenStyleFeed(myComplaints);
+
+      } else if (currentTab === 'dept_action') {
+        document.getElementById('view-title').innerText = `Actionable Queue - ${loggedDept}`;
+        document.getElementById('view-description').innerText = `Issues assigned exclusively to ${loggedDept}. You are authorized to resolve these.`;
+        document.getElementById('view-status-pill').innerText = "Action Permission: ALLOWED";
+
+        const deptComplaints = allComplaints.filter(t => (t.department === loggedDept || t.department_id === loggedDept));
+        renderActionableDepartmentFeed(deptComplaints);
+
+      } else if (currentTab === 'area_all') {
+        document.getElementById('view-title').innerText = "Area Overview (All Departments)";
+        document.getElementById('view-description').innerText = "Full visibility of all incidents logged in your area. Resolving is disabled for issues outside your logged department.";
+        document.getElementById('view-status-pill').innerText = "Read-Only Overview Mode";
+
+        renderReadOnlyFeed(allComplaints);
+      }
+    }
+
+    function renderCitizenStyleFeed(tickets) {
+      const container = document.getElementById('feed-container');
+      if (!tickets || tickets.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-2xl">You have not registered any field issues yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = tickets.map(ticket => `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex justify-between items-start">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">${ticket.ticketId || ticket.id || ticket.ticket_id}</span>
+                <span class="text-xs font-semibold text-slate-300 bg-slate-800 px-2 py-0.5 rounded">${ticket.category}</span>
+                <span class="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">🏢 Assigned: ${ticket.department || ticket.department_id}</span>
+              </div>
+              <h3 class="text-sm font-bold text-slate-100 pt-1">${ticket.description}</h3>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full ${
+              ticket.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+            }">${ticket.status}</span>
+          </div>
+
+          <div class="flex items-center gap-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+            <div>
+              <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Before Image</span>
+              <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-16 h-16 object-cover rounded-lg bg-slate-800" />
+            </div>
+            <div>
+              <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">After Image</span>
+              ${ticket.afterImage 
+                ? `<img src="${ticket.afterImage}" class="w-16 h-16 object-cover rounded-lg border border-emerald-500/40 bg-slate-800" />`
+                : `<div class="w-16 h-16 rounded-lg border border-dashed border-slate-700 bg-slate-900 flex items-center justify-center text-[10px] text-slate-500">In Progress</div>`
+              }
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center text-xs text-slate-400 border-t border-slate-800 pt-3">
+            <span>📍 ${ticket.location || (ticket.coords ? `GPS: ${ticket.coords.latitude}, ${ticket.coords.longitude}` : 'Location recorded')}</span>
+            <span>🕒 Filed: ${new Date(ticket.createdAt || ticket.created_at || Date.now()).toLocaleString()}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderActionableDepartmentFeed(tickets) {
+      const container = document.getElementById('feed-container');
+      if (!tickets || tickets.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-2xl">No open issues currently assigned to ${getLoggedDepartment()}.</div>`;
+        return;
+      }
+
+      container.innerHTML = tickets.map(ticket => `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex justify-between items-start">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">${ticket.ticketId || ticket.id || ticket.ticket_id}</span>
+                <span class="text-xs font-semibold text-slate-300 bg-slate-800 px-2 py-0.5 rounded">${ticket.category}</span>
+              </div>
+              <h3 class="text-sm font-bold text-slate-100 pt-1">${ticket.description}</h3>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full ${
+              ticket.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+            }">${ticket.status}</span>
+          </div>
+
+          <div class="flex items-center gap-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+            <div>
+              <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Before Picture</span>
+              <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-16 h-16 object-cover rounded-lg bg-slate-800" />
+            </div>
+            <div>
+              <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">After Picture</span>
+              ${ticket.afterImage 
+                ? `<img src="${ticket.afterImage}" class="w-16 h-16 object-cover rounded-lg border border-emerald-500/40 bg-slate-800" />`
+                : `<div class="w-16 h-16 rounded-lg border border-dashed border-slate-700 bg-slate-900 flex items-center justify-center text-[10px] text-slate-500">Pending Fix</div>`
+              }
+            </div>
+          </div>
+
+          ${ticket.status !== 'Resolved' ? `
+            <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
+              <div class="flex items-center gap-2">
+                <label class="text-xs text-slate-400 font-medium">Upload Resolution Photo:</label>
+                <input type="file" id="after-img-${ticket.ticketId || ticket.id}" accept="image/*" class="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 cursor-pointer"/>
+              </div>
+              <button onclick="resolveWithAfterImage('${ticket.ticketId || ticket.id}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition shadow-lg shadow-emerald-600/20">
+                Mark Resolved
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderReadOnlyFeed(tickets) {
+      const container = document.getElementById('feed-container');
+      const loggedDept = getLoggedDepartment();
+
+      if (!tickets || tickets.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-2xl">No tickets found in the area.</div>`;
+        return;
+      }
+
+      container.innerHTML = tickets.map(ticket => {
+        const belongsToLoggedDept = (ticket.department === loggedDept || ticket.department_id === loggedDept);
+
+        return `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex justify-between items-start">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">${ticket.ticketId || ticket.id || ticket.ticket_id}</span>
+                <span class="text-xs font-semibold text-slate-300 bg-slate-800 px-2 py-0.5 rounded">${ticket.category}</span>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded ${belongsToLoggedDept ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800 text-slate-400'}">
+                  🏢 ${ticket.department || ticket.department_id}
+                </span>
+              </div>
+              <h3 class="text-sm font-bold text-slate-100 pt-1">${ticket.description}</h3>
+            </div>
+            
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full ${
+              ticket.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+            }">${ticket.status}</span>
+          </div>
+
+          <div class="flex items-center gap-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
+            <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-16 h-16 object-cover rounded-lg bg-slate-800" />
+            <div class="text-xs text-slate-400 space-y-1">
+              <p>📍 Location: <strong class="text-slate-200">${ticket.location || (ticket.coords ? `${ticket.coords.latitude}, ${ticket.coords.longitude}` : 'N/A')}</strong></p>
+              <p>🕒 Filed: ${new Date(ticket.createdAt || ticket.created_at || Date.now()).toLocaleString()}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs border-t border-slate-800 pt-3">
+            ${belongsToLoggedDept 
+              ? `<span class="text-emerald-400 font-semibold">✔ Belongs to your department (${loggedDept}) — Go to "Actionable Queue" tab to resolve.</span>`
+              : `<span class="text-slate-500 italic">🔒 Restricted: Belongs to ${ticket.department || ticket.department_id}. Only officers from that department can resolve this.</span>`
+            }
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    async function resolveWithAfterImage(ticketId) {
+      const fileInput = document.getElementById(`after-img-${ticketId}`);
+      let afterImageBase64 = null;
+
+      if (fileInput && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        afterImageBase64 = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      } else {
+        if (!confirm('Resolve this ticket without adding an After photo?')) return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/complaints/${ticketId}/resolve`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ afterImage: afterImageBase64 })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          fetchComplaints();
+        } else {
+          alert('Failed to update ticket: ' + (data.message || data.error));
+        }
+      } catch (err) {
+        console.error('Error resolving ticket:', err);
+        alert('Server connection error.');
+      }
+    }
+
+    function openComplaintModal() {
+      document.getElementById('register-modal').classList.remove('hidden');
+    }
+
+    function closeComplaintModal() {
+      document.getElementById('register-modal').classList.add('hidden');
+      document.getElementById('staff-complaint-form').reset();
+    }
+
+    function handleImageCaptured() {
+      getGPSLocation();
+    }
+
+    function getGPSLocation() {
+      const locationInput = document.getElementById('citizen-location');
+      locationInput.value = "Fetching GPS coordinates...";
+
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            photoCoords = {
-              latitude: pos.coords.latitude.toFixed(4),
-              longitude: pos.coords.longitude.toFixed(4)
-            };
-            status.className = "text-xs text-emerald-400 bg-slate-900 border border-slate-700 p-2.5 rounded-lg font-mono";
-            status.innerText = `📍 Location Stamped: Lat ${photoCoords.latitude}, Lon ${photoCoords.longitude}`;
+            locationInput.value = `GPS (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})`;
           },
-          (err) => {
-            photoCoords = { latitude: "12.9716", longitude: "77.5946" };
-            status.className = "text-xs text-amber-400 bg-slate-900 border border-slate-700 p-2.5 rounded-lg font-mono";
-            status.innerText = `📍 Location Stamped (Default): Lat ${photoCoords.latitude}, Lon ${photoCoords.longitude}`;
-          },
-          { enableHighAccuracy: true, timeout: 10000 }
+          () => {
+            locationInput.value = "GPS (12.9716, 77.5946)";
+          }
         );
       }
     }
 
-    function startVoiceInput() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Voice recognition is not supported on this browser.");
-        return;
-      }
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.onstart = () => {
-        document.getElementById('staffIssueDesc').placeholder = "Listening...";
-      };
-      recognition.onresult = (event) => {
-        document.getElementById('staffIssueDesc').value = event.results[0][0].transcript;
-      };
-      recognition.start();
-    }
+    async function handleCitizenComplaintSubmit(e) {
+      e.preventDefault();
+      
+      const phone = document.getElementById('citizen-phone').value;
+      const location = document.getElementById('citizen-location').value;
+      const description = document.getElementById('citizen-description').value || "No description provided.";
+      const imageInput = document.getElementById('citizen-image');
+      const submitBtn = document.getElementById('submit-btn');
+      const statusDiv = document.getElementById('modal-status');
 
-    async function fetchStaffData() {
-      try {
-        const response = await fetch('http://localhost:3000/api/complaints');
-        const data = await response.json();
+      if (!imageInput.files[0]) return;
 
-        if (data.success) {
-          const list = document.getElementById('staffTicketsList');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'AI Verification in progress...';
+      
+      statusDiv.className = 'text-xs p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 block';
+      statusDiv.innerText = 'Analyzing photo with Gemini AI...';
 
-          let filteredComplaints = data.complaints;
-          if (activeDept && activeDept !== 'All') {
-            filteredComplaints = data.complaints.filter(c => c.category === activeDept);
+      const file = imageInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = async function(evt) {
+        const imageBase64 = evt.target.result;
+
+        let detectedCategory = 'Pothole / Road Damage';
+        try {
+          const aiRes = await fetch(`${API_BASE}/classify-image`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageBase64 })
+          });
+          const aiData = await aiRes.json();
+          if (aiData.success && aiData.category) {
+            detectedCategory = aiData.category;
           }
-
-          if (filteredComplaints.length === 0) {
-            list.innerHTML = `<p class="text-xs text-slate-400">No active complaints logged for ${activeDept}.</p>`;
-            return;
-          }
-
-          list.innerHTML = filteredComplaints.map(ticket => {
-            const createdAt = new Date(ticket.timestamp || Date.now()).getTime();
-            const extensionHours = localSlaExtensions[ticket.ticketId] || 0;
-            const slaDeadline = createdAt + ((48 + extensionHours) * 60 * 60 * 1000);
-            const remainingMs = slaDeadline - Date.now();
-            
-            let slaBadge = "";
-            if (remainingMs > 0) {
-              const hoursLeft = Math.floor(remainingMs / (1000 * 60 * 60));
-              const minsLeft = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-              slaBadge = `<span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded font-mono">⏳ 48h SLA: ${hoursLeft}h ${minsLeft}m remaining</span>`;
-            } else {
-              slaBadge = `<span class="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded font-mono font-bold">⚠️ OVERDUE</span>`;
-            }
-
-            return `
-              <div class="bg-slate-900 p-4 rounded-lg border border-slate-700 space-y-3">
-                <div class="flex justify-between items-start flex-wrap gap-2">
-                  <div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class="text-sm font-bold text-emerald-400">${ticket.ticketId}</span>
-                      <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded">${ticket.category}</span>
-                      ${slaBadge}
-                      ${extensionHours > 0 ? `<span class="text-[10px] text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800">+${extensionHours}h Extension Active</span>` : ''}
-                    </div>
-                    <p class="text-xs text-slate-300 mt-2">"${ticket.description}"</p>
-                    <p class="text-[10px] text-slate-500 font-mono mt-1">📍 Coords: ${ticket.coords ? ticket.coords.latitude : ticket.latitude}, ${ticket.coords ? ticket.coords.longitude : ticket.longitude}</p>
-                  </div>
-                  <span class="text-xs font-bold px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full">
-                    ${ticket.status}
-                  </span>
-                </div>
-
-                <!-- Action Toolbar for Staff -->
-                <div class="border-t border-slate-800 pt-3 flex flex-wrap justify-between items-center gap-2">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[11px] text-slate-400 font-medium">Update Status:</span>
-                    <button onclick="updateTicketStatus('${ticket.ticketId}', 'In Progress')" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1 rounded border border-slate-700 cursor-pointer">⚙️ In Progress</button>
-                    <button onclick="updateTicketStatus('${ticket.ticketId}', 'Resolved')" class="text-[10px] bg-emerald-950 hover:bg-emerald-900 text-emerald-400 px-2 py-1 rounded border border-emerald-800 cursor-pointer">✅ Resolve</button>
-                  </div>
-                  
-                  <button onclick="requestExtension('${ticket.ticketId}')" class="text-[10px] bg-slate-800 hover:bg-amber-950 text-amber-400 border border-slate-700 hover:border-amber-900 px-2.5 py-1 rounded transition cursor-pointer">
-                    ⏰ Request +24h Extension
-                  </button>
-                </div>
-              </div>
-            `;
-          }).join('');
+        } catch (err) {
+          console.warn("AI Classification unreachable, using default category");
         }
-      } catch (err) {
-        console.error("Staff fetch failed:", err);
-      }
-    }
 
-    async function submitStaffIssue() {
-      const msg = document.getElementById('staffMsg');
-      const issue = document.getElementById('staffIssueType').value;
-      const desc = document.getElementById('staffIssueDesc').value;
-      const imageInput = document.getElementById('staffIncidentImage');
+        try {
+          const response = await fetch(`${API_BASE}/submit-complaint`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              phone, 
+              category: detectedCategory,
+              description, 
+              location, 
+              imageBase64,
+              officerId: CURRENT_OFFICER_ID
+            })
+          });
 
-      msg.classList.add('hidden');
+          const data = await response.json();
 
-      if (!photoCoords) {
-        photoCoords = { latitude: "12.9716", longitude: "77.5946" };
-      }
-
-      let imageBase64 = null;
-      if (imageInput && imageInput.files.length > 0) {
-        const reader = new FileReader();
-        reader.readAsDataURL(imageInput.files[0]);
-        await new Promise(resolve => reader.onload = () => {
-          imageBase64 = reader.result;
-          resolve();
-        });
-      }
-
-      const payload = {
-        category: issue,
-        description: desc,
-        coords: photoCoords,
-        image: imageBase64
+          if (data.success) {
+            statusDiv.className = 'text-xs p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 block';
+            statusDiv.innerText = `Verified & Saved under Officer ID: ${CURRENT_OFFICER_ID}`;
+            setTimeout(() => {
+              closeComplaintModal();
+              fetchComplaints();
+            }, 1000);
+          } else {
+            statusDiv.className = 'text-xs p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 block';
+            statusDiv.innerText = data.message || 'Image rejected by AI.';
+          }
+        } catch (err) {
+          statusDiv.className = 'text-xs p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 block';
+          statusDiv.innerText = 'Error connecting to server.';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Submit Incident';
+        }
       };
 
-      if (!navigator.onLine) {
-        offlineQueue.push(payload);
-        localStorage.setItem('offlineComplaints', JSON.stringify(offlineQueue));
-        msg.className = "text-xs font-semibold mt-2 p-2.5 rounded-lg text-center bg-amber-950/40 border border-amber-900 text-amber-400";
-        msg.innerText = "📶 Saved locally with GPS location. Will sync when online!";
-        msg.classList.remove('hidden');
-        resetStaffForm();
-        return;
-      }
-
-      sendStaffComplaintToServer(payload);
+      reader.readAsDataURL(file);
     }
-
-    async function sendStaffComplaintToServer(payload) {
-      const msg = document.getElementById('staffMsg');
-      msg.className = "text-xs font-semibold mt-2 p-2.5 rounded-lg text-center bg-slate-800 text-slate-300";
-      msg.innerText = "🤖 AI Analyzing photo & verifying authenticity...";
-      msg.classList.remove('hidden');
-
-      try {
-        const response = await fetch('http://localhost:3000/api/submit-complaint', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await response.json();
-
-        if (data.success) {
-          msg.className = "text-xs font-semibold mt-2 p-2.5 rounded-lg text-center bg-emerald-950/40 border border-emerald-900 text-emerald-400";
-          msg.innerText = `🎉 Lodged! Ticket ID: ${data.ticketId} — AI Categorized as: [${data.ticket.category}]`;
-          resetStaffForm();
-          fetchStaffData();
-        } else {
-          msg.className = "text-xs font-semibold mt-2 p-2.5 rounded-lg text-center bg-rose-950/40 border border-rose-900 text-rose-400";
-          msg.innerText = `❌ ${data.error || 'Submission rejected.'}`;
-        }
-      } catch (err) {
-        msg.className = "text-xs font-semibold mt-2 p-2.5 rounded-lg text-center bg-rose-950/40 border border-rose-900 text-rose-400";
-        msg.innerText = "❌ Server error or network connection lost.";
-      }
-    }
-
-    function resetStaffForm() {
-      document.getElementById('staffIssueDesc').value = '';
-      const imageInput = document.getElementById('staffIncidentImage');
-      if (imageInput) imageInput.value = '';
-      photoCoords = null;
-      document.getElementById('staffGeoStatus').className = "text-xs text-amber-400 bg-slate-900 border border-slate-700 p-2.5 rounded-lg font-mono";
-      document.getElementById('staffGeoStatus').innerText = "📷 Take a photo or upload to grab exact GPS coordinates...";
-    }
-
-    function syncOfflineQueue() {
-      if (offlineQueue.length > 0) {
-        offlineQueue.forEach(payload => sendStaffComplaintToServer(payload));
-        offlineQueue = [];
-        localStorage.removeItem('offlineComplaints');
-      }
-    }
-
-    function updateTicketStatus(ticketId, newStatus) {
-      alert(`Status for ${ticketId} updated to: ${newStatus}`);
-      fetchStaffData();
-    }
-
-    function requestExtension(ticketId) {
-      const reason = prompt("State reason for needing extra 24 hours extension:");
-      if (reason) {
-        localSlaExtensions[ticketId] = (localSlaExtensions[ticketId] || 0) + 24;
-        localStorage.setItem('slaExtensions', JSON.stringify(localSlaExtensions));
-        alert(`Extension granted (+24h) for ticket ${ticketId}. Reason: "${reason}"`);
-        fetchStaffData();
-      }
-    }
-
-    setInterval(fetchStaffData, 5000);
   </script>
 </body>
 </html>

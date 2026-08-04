@@ -1,128 +1,304 @@
+import 'dotenv/config'; // Loads .env file automatically
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
 
-dotenv.config();
-
 const app = express();
+
 app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// High body size limit to support Base64 photo uploads from citizen frontend
-app.use(express.json({ limit: '10mb' }));
+// Initialize Gemini AI Client
+const apiKey = process.env.GEMINI_API_KEY;
+if (!apiKey) {
+  console.warn("⚠️ WARNING: GEMINI_API_KEY is missing in your .env file!");
+}
+const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key' });
 
-// Initialize Gemini API if key is present
-const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY }) : null;
+// ==========================================
+// 1. DATA MODELS & IN-MEMORY STORES
+// ==========================================
 
-let complaints = [
-  {
-    ticketId: "TICK-1001",
-    category: "Streetlight Malfunction",
-    description: "3 dark poles near central junction park avenue corner.",
-    coords: { latitude: "12.9716", longitude: "77.5946" },
-    status: "In Progress",
-    timestamp: new Date().toISOString()
-  },
-  {
-    ticketId: "TICK-1002",
-    category: "Pothole / Road Damage",
-    description: "Massive crater near the exit turning path.",
-    coords: { latitude: "13.0827", longitude: "80.2707" },
-    status: "Open",
-    timestamp: new Date().toISOString()
-  }
+const DEPARTMENTS = [
+  { id: 'PWD', name: 'Roads & Public Works (PWD)' },
+  { id: 'WASTE', name: 'Waste Management & Sanitation' },
+  { id: 'WATER', name: 'Water Supply & Sewage' },
+  { id: 'ELEC', name: 'Electrical & Streetlighting' }
 ];
 
-// OTP Verification Endpoint
-app.post('/api/verify-otp', (req, res) => {
-  const { otp } = req.body;
-  if (otp === "1234") {
-    return res.json({ success: true, message: "Authorized" });
-  }
-  return res.status(400).json({ success: false, error: "Invalid OTP code." });
-});
+// BBMP Bengaluru Ward Members & Department Level Officers
+const EMPLOYEES = [
+  // --- Level 1: BBMP Department Heads ---
+  { id: 'EMP-101', name: 'Rajesh Kumar', email: 'rajesh.pwd@bbmp.gov.in', department_id: 'Roads & Public Works (PWD)', level: 1, designation: 'Executive Engineer (Bengaluru PWD)', assigned_ward: 'All', reports_to_id: null },
+  { id: 'EMP-102', name: 'Priya Sharma', email: 'priya.waste@bbmp.gov.in', department_id: 'Waste Management & Sanitation', level: 1, designation: 'Chief Sanitary Officer (BBMP)', assigned_ward: 'All', reports_to_id: null },
+  { id: 'EMP-103', name: 'Amitabh Sen', email: 'amitabh.water@bwssb.gov.in', department_id: 'Water Supply & Sewage', level: 1, designation: 'BWSSB Chief Engineer', assigned_ward: 'All', reports_to_id: null },
+  { id: 'EMP-104', name: 'Sunita Rao', email: 'sunita.elec@bescom.org', department_id: 'Electrical & Streetlighting', level: 1, designation: 'BESCOM General Manager', assigned_ward: 'All', reports_to_id: null },
 
-// Citizen Issue Submission with AI Classification & Fraud Detection
-app.post('/api/submit-complaint', async (req, res) => {
-  const { category, description, latitude, longitude, coords, image } = req.body;
+  // --- Level 2: BBMP Ward Officers / Ward Engineers ---
+  { id: 'EMP-201', name: 'Suresh Gowda', email: 'suresh.koramangala@bbmp.gov.in', department_id: 'Roads & Public Works (PWD)', level: 2, designation: 'Ward Engineer - Koramangala', assigned_ward: 'Koramangala', reports_to_id: 'EMP-101' },
+  { id: 'EMP-202', name: 'Ananya Reddy', email: 'ananya.indiranagar@bbmp.gov.in', department_id: 'Roads & Public Works (PWD)', level: 2, designation: 'Ward Engineer - Indiranagar', assigned_ward: 'Indiranagar', reports_to_id: 'EMP-101' },
+  { id: 'EMP-203', name: 'Ramesh Hegde', email: 'ramesh.whitefield@bbmp.gov.in', department_id: 'Roads & Public Works (PWD)', level: 2, designation: 'Ward Engineer - Whitefield', assigned_ward: 'Whitefield', reports_to_id: 'EMP-101' },
+  { id: 'EMP-204', name: 'Kavitha Murthy', email: 'kavitha.jayanagar@bbmp.gov.in', department_id: 'Roads & Public Works (PWD)', level: 2, designation: 'Ward Engineer - Jayanagar', assigned_ward: 'Jayanagar', reports_to_id: 'EMP-101' },
+  { id: 'EMP-205', name: 'Deepak Rao', email: 'deepak.hsr@bbmp.gov.in', department_id: 'Roads & Public Works (PWD)', level: 2, designation: 'Ward Engineer - HSR Layout', assigned_ward: 'HSR Layout', reports_to_id: 'EMP-101' },
   
-  let finalCategory = (category && category !== "Auto") ? category : "Pothole / Road Damage";
-  let isAuthentic = true;
+  { id: 'EMP-206', name: 'Venkatesh K', email: 'venkatesh.sanitation@bbmp.gov.in', department_id: 'Waste Management & Sanitation', level: 2, designation: 'Sanitary Inspector - Koramangala', assigned_ward: 'Koramangala', reports_to_id: 'EMP-102' },
+  { id: 'EMP-207', name: 'Meena Shivkumar', email: 'meena.sanitation@bbmp.gov.in', department_id: 'Waste Management & Sanitation', level: 2, designation: 'Sanitary Inspector - Indiranagar', assigned_ward: 'Indiranagar', reports_to_id: 'EMP-102' },
+  { id: 'EMP-208', name: 'Rohan Gupta', email: 'rohan.water@bwssb.gov.in', department_id: 'Water Supply & Sewage', level: 2, designation: 'BWSSB Inspector - Whitefield', assigned_ward: 'Whitefield', reports_to_id: 'EMP-103' },
+  { id: 'EMP-209', name: 'Neha Fernandez', email: 'neha.elec@bescom.org', department_id: 'Electrical & Streetlighting', level: 2, designation: 'BESCOM Inspector - HSR Layout', assigned_ward: 'HSR Layout', reports_to_id: 'EMP-104' }
+];
 
-  // Perform AI Inspection & Categorization if photo and GEMINI_API_KEY exist
-  if (image && ai) {
-    try {
-      const base64Data = image.split(',')[1] || image;
-      
-      const prompt = `You are a municipal civic complaint AI classifier.
-      Task:
-      1. Analyze this civic incident image.
-      2. Strictly classify the issue into EXACTLY ONE of these categories:
-         - "Pothole / Road Damage"
-         - "Streetlight Malfunction"
-         - "Garbage Accumulation"
-         - "Water Leakage"
-      3. Anti-fraud check: Detect if this photo is an authentic real photo taken on a smartphone, or if it is a fake/stock photo downloaded from Google/internet, or non-civic picture.
+let complaints = [];
 
-      Return ONLY a JSON object:
-      {"category": "EXACT_CATEGORY_NAME", "isReal": true/false}`;
+// Area-Aware Smart Routing Logic
+function routeComplaint(department, wardString) {
+  const cleanWard = (wardString || '').toLowerCase();
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: prompt },
-              { inlineData: { data: base64Data, mimeType: "image/jpeg" } }
-            ]
-          }
-        ]
-      });
+  // Find Ward Officer matching Department and Ward Area Name
+  let assignedOfficer = EMPLOYEES.find(emp => {
+    const empWard = emp.assigned_ward.toLowerCase();
+    const sameDept = (emp.department_id === department || emp.department_id === getDeptName(department));
+    return emp.level === 2 && sameDept && (cleanWard.includes(empWard) || empWard.includes(cleanWard));
+  });
 
-      const jsonText = response.text.replace(/```json|```/g, '').trim();
-      const aiAnalysis = JSON.parse(jsonText);
-
-      if (aiAnalysis.category) {
-        finalCategory = aiAnalysis.category; // Auto-classified by Gemini!
-      }
-      if (typeof aiAnalysis.isReal === 'boolean') {
-        isAuthentic = aiAnalysis.isReal;
-      }
-    } catch (err) {
-      console.error("AI Analysis error:", err.message);
-    }
+  // Fallback: If specific ward officer is not found for that ward/dept combo, assign to the general department level officer
+  if (!assignedOfficer) {
+    assignedOfficer = EMPLOYEES.find(emp => 
+      emp.level === 2 && (emp.department_id === department || emp.department_id === getDeptName(department))
+    ) || EMPLOYEES[0];
   }
 
-  // Reject fake or downloaded images
-  if (!isAuthentic) {
-    return res.status(400).json({
+  const supervisor = EMPLOYEES.find(emp => emp.id === assignedOfficer.reports_to_id) || EMPLOYEES[0];
+
+  return {
+    assigned_to_employee_id: assignedOfficer.id,
+    assigned_officer_name: assignedOfficer.name,
+    supervisor_id: supervisor.id
+  };
+}
+
+function getDeptName(departmentKey) {
+  if (departmentKey === 'PWD') return 'Roads & Public Works (PWD)';
+  if (departmentKey === 'WASTE') return 'Waste Management & Sanitation';
+  if (departmentKey === 'WATER') return 'Water Supply & Sewage';
+  if (departmentKey === 'ELEC') return 'Electrical & Streetlighting';
+  return departmentKey;
+}
+
+function mapCategoryToDepartment(category) {
+  if (!category) return 'Roads & Public Works (PWD)';
+  const catLower = category.toLowerCase();
+  if (catLower.includes('pothole') || catLower.includes('road')) return 'Roads & Public Works (PWD)';
+  if (catLower.includes('garbage') || catLower.includes('waste') || catLower.includes('sanitation')) return 'Waste Management & Sanitation';
+  if (catLower.includes('water') || catLower.includes('sewage') || catLower.includes('leakage')) return 'Water Supply & Sewage';
+  if (catLower.includes('electric') || catLower.includes('light')) return 'Electrical & Streetlighting';
+  return 'Roads & Public Works (PWD)';
+}
+
+// ==========================================
+// 2. GEMINI AI CLASSIFICATION ENDPOINT
+// ==========================================
+app.post('/api/classify-image', async (req, res) => {
+  try {
+    const { image, imageBase64 } = req.body;
+    const rawImage = image || imageBase64;
+
+    if (!rawImage) {
+      return res.status(400).json({ success: false, error: 'No image provided.' });
+    }
+
+    console.log("📸 Received image for Gemini AI Analysis...");
+
+    const mimeMatch = rawImage.match(/^data:(image\/\w+);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+    const base64Data = rawImage.replace(/^data:image\/\w+;base64,/, '');
+
+    const prompt = `Analyze this image for civic infrastructure/public service issues. 
+Select EXACTLY one of the following category strings that best matches the image content:
+- "Pothole / Road Damage"
+- "Streetlight Malfunction"
+- "Garbage Accumulation"
+- "Water Leakage"
+
+Respond ONLY with the exact chosen category string and nothing else.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                mimeType: mimeType,
+                data: base64Data
+              }
+            }
+          ]
+        }
+      ]
+    });
+
+    const categoryText = response.text ? response.text.trim() : 'Pothole / Road Damage';
+    console.log("✨ Gemini Classified Image as:", categoryText);
+
+    res.json({
+      success: true,
+      category: categoryText
+    });
+  } catch (err) {
+    console.error("❌ AI Classification Error:", err.message);
+    res.status(500).json({
       success: false,
-      error: "AI Rejection: Image flagged as downloaded stock photo, fake, or non-civic."
+      error: err.message,
+      fallbackCategory: "Pothole / Road Damage"
     });
   }
-
-  // Extract location stamped at photo time
-  const lat = coords?.latitude || latitude || "12.9716";
-  const lng = coords?.longitude || longitude || "77.5946";
-
-  const newTicket = {
-    ticketId: `TICK-${Math.floor(1000 + Math.random() * 9000)}`,
-    category: finalCategory,
-    description: description || "No extra remarks provided.",
-    coords: { latitude: lat, longitude: lng },
-    status: "Submitted",
-    timestamp: new Date().toISOString()
-  };
-
-  complaints.unshift(newTicket);
-  res.json({ success: true, ticketId: newTicket.ticketId, ticket: newTicket });
 });
 
-// Get Complaints
-app.get('/api/complaints', (req, res) => {
-  res.json({ success: true, complaints });
+// ==========================================
+// 3. OTHER API ENDPOINTS
+// ==========================================
+app.get('/api/departments', (req, res) => res.json({ success: true, departments: DEPARTMENTS }));
+app.get('/api/employees', (req, res) => res.json({ success: true, employees: EMPLOYEES }));
+app.get('/api/complaints', (req, res) => res.json({ success: true, complaints }));
+
+app.post('/api/submit-complaint', (req, res) => {
+  try {
+    let { category, description, coords, latitude, longitude, image, imageBase64, ward, department_id, department, location, officerId, phone } = req.body;
+
+    const imgData = image || imageBase64 || null;
+    if (!category || category === 'Auto Detect' || category === 'Pending AI Classification') category = 'Pothole / Road Damage';
+    ward = ward || 'Koramangala';
+
+    const resolvedDeptName = department || getDeptName(department_id) || mapCategoryToDepartment(category);
+    const routing = routeComplaint(resolvedDeptName, ward);
+
+    const ticketId = `TICK-${Date.now().toString().slice(-6)}`;
+    const newComplaint = {
+      id: ticketId,
+      ticketId,
+      ticket_id: ticketId,
+      category,
+      description: description || 'No description provided.',
+      department: resolvedDeptName,
+      department_id: resolvedDeptName,
+      ward,
+      location: location || `BBMP Area: ${ward} (${coords ? coords.latitude : latitude || '12.9344'}, ${coords ? coords.longitude : longitude || '77.6101'})`,
+      coords: coords || { latitude: latitude || "12.9344", longitude: longitude || "77.6101" },
+      latitude: latitude || (coords ? coords.latitude : "12.9344"),
+      longitude: longitude || (coords ? coords.longitude : "77.6101"),
+      image: imgData,
+      imageBase64: imgData,
+      beforeImage: imgData,
+      afterImage: null,
+      status: 'OPEN',
+      officerId: officerId || routing.assigned_to_employee_id || 'EMP-201',
+      assigned_to_employee_id: routing.assigned_to_employee_id || officerId || 'EMP-201',
+      assigned_officer_name: routing.assigned_officer_name,
+      supervisor_id: routing.supervisor_id,
+      phone: phone || null,
+      is_escalated: false,
+      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString()
+    };
+
+    complaints.unshift(newComplaint);
+
+    res.json({
+      success: true,
+      message: 'Complaint lodged successfully.',
+      ticketId: newComplaint.ticketId,
+      ticket: newComplaint
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.patch('/api/complaints/:id/resolve', (req, res) => {
+  const { id } = req.params;
+  const { afterImage } = req.body;
+
+  const complaint = complaints.find(c => c.id === id || c.ticketId === id || c.ticket_id === id);
+  if (!complaint) {
+    return res.status(404).json({ success: false, message: 'Complaint not found.' });
+  }
+
+  complaint.status = 'Resolved';
+  if (afterImage) {
+    complaint.afterImage = afterImage;
+  }
+
+  res.json({ success: true, message: 'Complaint marked as resolved.', complaint });
+});
+
+app.post('/api/verify-otp', (req, res) => {
+  const { otp } = req.body;
+  if (otp === '1234') res.json({ success: true, message: 'Authenticated successfully.' });
+  else res.status(400).json({ success: false, error: 'Invalid OTP code.' });
 });
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+// Store in-memory time extension requests
+let extensionRequests = [
+  {
+    id: 'EXT-101',
+    ticketId: 'TICK-104',
+    staffName: 'Ramesh (EMP-204)',
+    ward: 'Koramangala (Ward 151)',
+    reason: 'Heavy monsoon rain damaged newly laid asphalt. Need extra 48 hours for curing.',
+    requestedExtraTime: '+2 Days',
+    status: 'Pending'
+  }
+];
+
+// GET: All Extension Requests for HOD
+app.get('/api/extensions', (req, res) => {
+  res.json({ success: true, extensions: extensionRequests });
+});
+
+// POST: Staff creates a new Extension Request
+app.post('/api/extensions', (req, res) => {
+  const { ticketId, staffName, ward, reason, requestedExtraTime } = req.body;
+  const newExt = {
+    id: `EXT-${Date.now().toString().slice(-4)}`,
+    ticketId,
+    staffName: staffName || 'Field Staff',
+    ward: ward || 'General Ward',
+    reason,
+    requestedExtraTime,
+    status: 'Pending'
+  };
+  extensionRequests.unshift(newExt);
+  res.json({ success: true, message: 'Extension requested.', extension: newExt });
+});
+
+// PATCH: HOD Approves or Rejects Extension
+app.patch('/api/extensions/:id', (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body; // 'Approved' or 'Rejected'
+  
+  const ext = extensionRequests.find(e => e.id === id);
+  if (!ext) return res.status(404).json({ success: false, error: 'Request not found.' });
+
+  ext.status = status;
+  res.json({ success: true, message: `Extension request ${status.toLowerCase()}.`, extension: ext });
+});
+
+// PATCH: HOD Reassigns Neglected Complaint to New Staff
+app.patch('/api/complaints/:id/reassign', (req, res) => {
+  const { id } = req.params;
+  const { newStaffId } = req.body;
+
+  const complaint = complaints.find(c => c.id === id || c.ticketId === id);
+  if (!complaint) return res.status(404).json({ success: false, error: 'Complaint not found.' });
+
+  complaint.assigned_to_employee_id = newStaffId;
+  complaint.officerId = newStaffId;
+  complaint.is_reassigned = true;
+
+  res.json({ success: true, message: `Complaint reassigned to ${newStaffId}`, complaint });
+});

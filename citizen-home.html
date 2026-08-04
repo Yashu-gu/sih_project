@@ -68,17 +68,29 @@
       <div class="space-y-4">
         <div>
           <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">1. Take / Attach Photo (Captures Location & AI Category)</label>
-          <input type="file" id="incidentImage" accept="image/*" capture="environment" onchange="capturePhotoLocation()" class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-950 file:text-emerald-400 file:border file:border-emerald-900 cursor-pointer">
+          <input type="file" id="incidentImage" accept="image/*" capture="environment" onchange="capturePhotoLocation(event)" class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-950 file:text-emerald-400 file:border file:border-emerald-900 cursor-pointer">
         </div>
 
+        <!-- AI AUTO-DETECTED CATEGORY DISPLAY -->
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Category (Auto-Categorized by AI Photo)</label>
-          <select id="issueType" class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-            <option value="Auto">🤖 Auto-Detect Category via AI Photo</option>
-            <option value="Pothole / Road Damage">Pothole / Road Damage</option>
-            <option value="Streetlight Malfunction">Streetlight Malfunction</option>
-            <option value="Garbage Accumulation">Garbage Accumulation</option>
-            <option value="Water Leakage">Water Leakage</option>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">AI Classified Category</label>
+          <div id="aiCategoryDisplay" class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2.5 text-xs font-semibold text-emerald-400 flex items-center gap-2">
+            <span>🤖</span>
+            <span id="aiCategoryText">Awaiting image upload...</span>
+          </div>
+          <!-- Hidden input to hold the actual value for form submission -->
+          <input type="hidden" id="issueType" value="Pending AI Classification">
+        </div>
+
+        <!-- DYNAMIC BENGALURU WARD SELECTION -->
+        <div>
+          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-2">Ward Location (Bengaluru Areas)</label>
+          <select id="wardSelect" class="w-full bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+            <option value="Koramangala">Koramangala (Ward 151)</option>
+            <option value="Indiranagar">Indiranagar (Ward 112)</option>
+            <option value="Whitefield">Whitefield (Ward 84)</option>
+            <option value="Jayanagar">Jayanagar (Ward 153)</option>
+            <option value="HSR Layout">HSR Layout (Ward 174)</option>
           </select>
         </div>
 
@@ -141,29 +153,118 @@
       }, 100);
     }
 
-    // Triggered automatically as soon as photo is taken / attached
-    function capturePhotoLocation() {
+    // Reverse Geocoding via OpenStreetMap API to map lat/lon to dynamic Bengaluru Locality
+    async function reverseGeocodeBengaluru(lat, lon) {
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`);
+        const data = await response.json();
+        const addr = data.address || {};
+        const suburb = addr.suburb || addr.neighbourhood || addr.residential || addr.subdistrict || addr.city_district || "Koramangala";
+        return suburb;
+      } catch (err) {
+        console.warn("Reverse geocoding failed, fallback to Koramangala:", err);
+        return "Koramangala";
+      }
+    }
+
+    function updateWardDropdown(detectedArea) {
+      const select = document.getElementById('wardSelect');
+      const cleanArea = detectedArea.toLowerCase();
+
+      let matched = false;
+      for (let option of select.options) {
+        if (option.value.toLowerCase().includes(cleanArea) || cleanArea.includes(option.value.toLowerCase())) {
+          select.value = option.value;
+          matched = true;
+          break;
+        }
+      }
+
+      if (!matched) {
+        const newOpt = document.createElement('option');
+        newOpt.value = detectedArea;
+        newOpt.innerText = `${detectedArea} (Auto-detected Ward)`;
+        select.appendChild(newOpt);
+        select.value = newOpt.value;
+      }
+    }
+
+    async function capturePhotoLocation(event) {
+      const file = event.target ? event.target.files[0] : event;
+      if (!file) return;
+
       const status = document.getElementById('geoStatus');
-      status.innerText = "⏳ Acquiring photo capture location...";
-      
+      status.innerText = "⏳ Reverse geocoding Bengaluru area & running AI classification...";
+
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            photoCoords = {
-              latitude: pos.coords.latitude.toFixed(4),
-              longitude: pos.coords.longitude.toFixed(4)
-            };
+          async (pos) => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            photoCoords = { latitude: lat.toFixed(4), longitude: lon.toFixed(4) };
+
+            // Dynamic Reverse Geocoding
+            const areaName = await reverseGeocodeBengaluru(lat, lon);
+            updateWardDropdown(areaName);
+
             status.className = "text-xs text-emerald-400 bg-slate-900 border border-slate-800 p-2.5 rounded-lg font-mono";
-            status.innerText = `📍 Location Stamped: Lat ${photoCoords.latitude}, Lon ${photoCoords.longitude}`;
+            status.innerText = `📍 Stamped: Lat ${photoCoords.latitude}, Lon ${photoCoords.longitude} (Area: ${areaName})`;
           },
-          (err) => {
-            photoCoords = { latitude: "12.9716", longitude: "77.5946" };
+          async (err) => {
+            photoCoords = { latitude: "12.9344", longitude: "77.6101" };
+            const areaName = "Koramangala";
+            updateWardDropdown(areaName);
+
             status.className = "text-xs text-amber-400 bg-slate-900 border border-slate-800 p-2.5 rounded-lg font-mono";
-            status.innerText = `📍 Location Stamped (Default): Lat ${photoCoords.latitude}, Lon ${photoCoords.longitude}`;
+            status.innerText = `📍 Stamped (Default): Lat ${photoCoords.latitude}, Lon ${photoCoords.longitude} (Area: Koramangala)`;
           },
           { enableHighAccuracy: true, timeout: 10000 }
         );
       }
+
+      // Trigger AI Classification
+      analyzeImageWithAI(file);
+    }
+
+    async function analyzeImageWithAI(file) {
+      const categoryText = document.getElementById('aiCategoryText');
+      const categoryInput = document.getElementById('issueType');
+      const status = document.getElementById('geoStatus');
+
+      categoryText.innerText = "🤖 Analyzing image with Gemini AI...";
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const base64Image = reader.result;
+
+        try {
+          const res = await fetch('http://localhost:3000/api/classify-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64Image })
+          });
+
+          const data = await res.json();
+
+          if (data.success && data.category) {
+            categoryText.innerText = data.category;
+            categoryInput.value = data.category;
+
+            status.innerText = `✨ AI Identified Issue: ${data.category}`;
+            status.className = "text-xs text-emerald-400 bg-slate-900 border border-slate-800 p-2.5 rounded-lg font-mono";
+          } else {
+            const fallback = data.fallbackCategory || "Pothole / Road Damage";
+            categoryText.innerText = fallback;
+            categoryInput.value = fallback;
+          }
+        } catch (err) {
+          console.warn("AI Classification server offline or error:", err);
+          const fallback = "Pothole / Road Damage";
+          categoryText.innerText = `${fallback} (Server Offline)`;
+          categoryInput.value = fallback;
+        }
+      };
     }
 
     function startVoiceInput() {
@@ -192,9 +293,13 @@
           feed.innerHTML = data.complaints.map(item => `
             <div class="bg-[#1e293b] p-4 rounded-xl border border-slate-800 flex justify-between items-start">
               <div>
-                <span class="text-[10px] uppercase font-bold tracking-wider bg-amber-950/40 border border-amber-900/50 text-amber-400 px-2 py-0.5 rounded">${item.category}</span>
-                <p class="text-xs text-slate-300 mt-2">"${item.description}"</p>
-                <span class="text-[10px] text-slate-500 block mt-2 font-mono">📍 Stamped Location: ${item.coords ? item.coords.latitude : item.latitude}, ${item.coords ? item.coords.longitude : item.longitude}</span>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-[10px] uppercase font-bold tracking-wider bg-amber-950/40 border border-amber-900/50 text-amber-400 px-2 py-0.5 rounded">${item.category}</span>
+                  <span class="text-[10px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">${item.ticketId || item.ticket_id || item.id}</span>
+                  <span class="text-[10px] font-bold text-indigo-400 bg-indigo-950/50 border border-indigo-900 px-2 py-0.5 rounded">${item.ward || 'Koramangala'}</span>
+                </div>
+                <p class="text-xs text-slate-300">"${item.description}"</p>
+                <span class="text-[10px] text-slate-500 block mt-2 font-mono">📍 Stamped Location: ${item.coords ? item.coords.latitude : item.latitude || '12.9344'}, ${item.coords ? item.coords.longitude : item.longitude || '77.6101'} | Assigned Officer: ${item.assigned_officer_name || 'BBMP Ward Engineer'} [${item.assigned_to_employee_id || item.officerId || 'EMP-201'}]</span>
               </div>
               <span class="text-xs font-bold text-emerald-400 px-2 py-1 bg-emerald-500/10 rounded">${item.status}</span>
             </div>
@@ -209,16 +314,15 @@
       const msg = document.getElementById('msg');
       const issue = document.getElementById('issueType').value;
       const desc = document.getElementById('issueDesc').value;
+      const ward = document.getElementById('wardSelect').value;
       const imageInput = document.getElementById('incidentImage');
 
       msg.classList.add('hidden');
 
-      // Fallback location if user didn't take a photo first
       if (!photoCoords) {
-        photoCoords = { latitude: "12.9716", longitude: "77.5946" };
+        photoCoords = { latitude: "12.9344", longitude: "77.6101" };
       }
 
-      // Convert attached photo to Base64
       let imageBase64 = null;
       if (imageInput && imageInput.files.length > 0) {
         const reader = new FileReader();
@@ -232,11 +336,14 @@
       const payload = {
         category: issue,
         description: desc,
+        ward: ward,
         coords: photoCoords,
+        latitude: photoCoords.latitude,
+        longitude: photoCoords.longitude,
+        imageBase64: imageBase64,
         image: imageBase64
       };
 
-      // Handle Offline Mode
       if (!navigator.onLine) {
         offlineQueue.push(payload);
         localStorage.setItem('offlineComplaints', JSON.stringify(offlineQueue));
@@ -253,7 +360,7 @@
     async function sendComplaintToServer(payload) {
       const msg = document.getElementById('msg');
       msg.className = "text-xs font-semibold mt-4 p-3 rounded-lg text-center bg-slate-800 text-slate-300";
-      msg.innerText = "🤖 AI Analyzing photo & verifying authenticity...";
+      msg.innerText = "🤖 Processing complaint & auto-routing to Bengaluru Ward Member...";
       msg.classList.remove('hidden');
 
       try {
@@ -266,7 +373,7 @@
 
         if (data.success) {
           msg.className = "text-xs font-semibold mt-4 p-3 rounded-lg text-center bg-emerald-950/40 border border-emerald-900 text-emerald-400";
-          msg.innerText = `🎉 Lodged! Ticket ID: ${data.ticketId} — AI Categorized as: [${data.ticket.category}]`;
+          msg.innerText = `🎉 Lodged! Ticket ID: ${data.ticketId} — Routed to ${data.ticket.assigned_officer_name || 'Ward Officer'} [${data.ticket.assigned_to_employee_id || 'Assigned'}]`;
           resetForm();
           loadFeed();
         } else {
@@ -281,6 +388,8 @@
 
     function resetForm() {
       document.getElementById('issueDesc').value = '';
+      document.getElementById('aiCategoryText').innerText = 'Awaiting image upload...';
+      document.getElementById('issueType').value = 'Pending AI Classification';
       const imageInput = document.getElementById('incidentImage');
       if (imageInput) imageInput.value = '';
       photoCoords = null;
