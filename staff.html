@@ -1,102 +1,446 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Staff Portal - Citizen Connect</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Staff Portal - Citizen Connect Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
   </style>
 </head>
-<body class="bg-[#0f172a] text-slate-100 min-h-screen">
+<body class="bg-[#0b1329] text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
-  <!-- Top Navigation Header -->
-  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-indigo-500/30">
-        CC
-      </div>
-      <div>
-        <h1 class="text-lg font-bold leading-none text-slate-100">Staff Portal</h1>
-        <div class="flex items-center gap-2 mt-1">
-          <span class="text-xs text-slate-400">Logged in Department:</span>
-          <!-- Active Staff Department Selector -->
-          <select id="staff-dept-select" onchange="switchStaffDepartment()" class="bg-slate-800 border border-slate-700 text-xs text-indigo-300 font-bold rounded-lg px-2 py-0.5 focus:outline-none focus:border-indigo-500">
-            <option value="Electrical & Streetlighting">Electrical & Streetlighting</option>
-            <option value="Roads & Public Works (PWD)">Roads & Public Works (PWD)</option>
-            <option value="Water Supply & Sewage">Water Supply & Sewage</option>
-            <option value="Waste Management & Sanitation">Waste Management & Sanitation</option>
+  <!-- TOP NAVIGATION HEADER -->
+  <header class="sticky top-0 z-40 bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-800/80 px-4 lg:px-8 py-3.5 shadow-xl">
+    <div class="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Brand & Active Department Selector -->
+      <div class="flex items-center gap-3.5">
+        <a href="#" class="flex items-center gap-2.5 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-indigo-950/60 group-hover:scale-105 transition-transform">
+            CC
+          </div>
+          <div>
+            <h1 class="text-base font-bold text-white tracking-tight flex items-center gap-1.5 leading-none">
+              Staff Operations Portal
+              <span class="text-[10px] uppercase font-extrabold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-1.5 py-0.5 rounded-full">BBMP Govt</span>
+            </h1>
+            <p class="text-[11px] text-slate-400 font-medium mt-1">Municipal Issue Response Command</p>
+          </div>
+        </a>
+
+        <!-- Department Switcher Dropdown -->
+        <div class="hidden md:flex items-center bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 shadow-inner">
+          <span class="text-xs text-slate-400 mr-2 font-medium">Department:</span>
+          <select id="staff-dept-select" onchange="switchStaffDepartment()" class="bg-transparent text-xs text-indigo-300 font-bold focus:outline-none cursor-pointer">
+            <option value="Electrical & Streetlighting" class="bg-slate-900">Electrical & Streetlighting</option>
+            <option value="Roads & Public Works (PWD)" class="bg-slate-900">Roads & Public Works (PWD)</option>
+            <option value="Water Supply & Sewage" class="bg-slate-900">Water Supply & Sewage</option>
+            <option value="Waste Management & Sanitation" class="bg-slate-900">Waste Management & Sanitation</option>
           </select>
         </div>
       </div>
-    </div>
 
-    <div class="flex items-center space-x-4">
-      <button onclick="openComplaintModal()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/20">
-        <span>➕</span> Register New Field Issue
-      </button>
-
-      <button onclick="fetchComplaints()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition border border-slate-700">
-        🔄 Refresh
-      </button>
-
-      <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl px-3 py-1.5 flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="text-xs font-semibold text-slate-300" id="staff-id-display">Officer ID: STF-8842</span>
+      <!-- Global Search Bar -->
+      <div class="hidden lg:flex items-center flex-1 max-w-md mx-4">
+        <div class="relative w-full">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+            🔍
+          </span>
+          <input type="text" id="globalSearchInput" onkeyup="filterStaffFeed()" placeholder="Search reports, locations, issue IDs..." class="w-full pl-9 pr-4 py-2 text-xs bg-slate-950 border border-slate-800 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition">
+        </div>
       </div>
-      
-      <a href="login.html" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg text-xs font-semibold border border-rose-500/20 transition">
-        Logout
-      </a>
+
+      <!-- Right Header Controls -->
+      <div class="flex items-center gap-3">
+        
+        <!-- Register Incident CTA Button -->
+        <button onclick="openComplaintModal()" class="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-950/60 flex items-center gap-1.5 cursor-pointer">
+          <span>➕</span> <span class="hidden sm:inline">Register Field Issue</span>
+        </button>
+
+        <!-- Refresh Button -->
+        <button onclick="fetchComplaints()" title="Sync feed" class="p-2 sm:px-3 sm:py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold transition border border-slate-800 flex items-center gap-1.5 cursor-pointer">
+          <span>🔄</span> <span class="hidden md:inline">Refresh</span>
+        </button>
+
+        <!-- Notification Bell -->
+        <div class="relative">
+          <button onclick="toggleNotifications()" class="relative p-2 bg-slate-900 border border-slate-800 text-slate-300 hover:text-white rounded-xl transition cursor-pointer">
+            🔔
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-[9px] font-bold text-slate-950 rounded-full flex items-center justify-center">2</span>
+          </button>
+          
+          <!-- Notifications Popover -->
+          <div id="notificationsPopover" class="hidden absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h4 class="text-xs font-bold text-slate-200">Department Alerts</h4>
+              <span class="text-[10px] text-indigo-400 hover:underline cursor-pointer">Clear all</span>
+            </div>
+            <div class="space-y-2 max-h-60 overflow-y-auto text-xs">
+              <div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                <p class="font-bold text-rose-400">🔴 HIGH PRIORITY Assigned</p>
+                <p class="text-[11px] text-slate-400">Pothole emergency reported near Koramangala 4th Block.</p>
+                <span class="text-[10px] text-slate-500 font-mono">5m ago</span>
+              </div>
+              <div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                <p class="font-bold text-indigo-400">Officer STF-8842 Logged In</p>
+                <p class="text-[11px] text-slate-400">Session verified under Roads & PWD Department.</p>
+                <span class="text-[10px] text-slate-500 font-mono">15m ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Officer Profile Menu Dropdown -->
+        <div class="relative">
+          <button onclick="toggleProfileMenu()" class="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition cursor-pointer">
+            <div class="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-inner">
+              ST
+            </div>
+            <div class="hidden sm:block text-left">
+              <p id="staff-id-display" class="text-[11px] font-bold text-slate-200 leading-none">Officer ID: STF-8842</p>
+              <p class="text-[9px] text-emerald-400 font-medium leading-none mt-0.5">● Authorized Staff</p>
+            </div>
+            <span class="text-xs text-slate-400 ml-0.5">▼</span>
+          </button>
+
+          <!-- Profile Popover Menu -->
+          <div id="profilePopover" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-50 p-2 space-y-1">
+            <a href="#" class="block px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition">👤 My Profile</a>
+            <a href="#" class="block px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition">📊 My Activity Log</a>
+            <a href="#" class="block px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition">🏢 Department Access</a>
+            <a href="#" class="block px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl transition">⚙️ Settings</a>
+            <div class="border-t border-slate-800 my-1"></div>
+            <a href="login.html" class="block px-3 py-2 text-xs text-rose-400 hover:bg-rose-950/40 rounded-xl transition">🚪 Logout</a>
+          </div>
+        </div>
+
+      </div>
     </div>
   </header>
 
-  <!-- Navigation Tabs -->
-  <div class="max-w-7xl mx-auto px-6 pt-6">
-    <div class="flex border-b border-slate-800 space-x-2">
-      <button id="tab-my-issues" onclick="switchTab('my_issues')" class="px-4 py-2.5 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 transition flex items-center gap-2">
-        <span>👤</span> My Registered Issues <span id="badge-my-count" class="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full text-[10px]">0</span>
-      </button>
-      <button id="tab-dept-action" onclick="switchTab('dept_action')" class="px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2">
-        <span>🛠️</span> Actionable Department Queue <span id="badge-dept-count" class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full text-[10px]">0</span>
-      </button>
-      <button id="tab-area-all" onclick="switchTab('area_all')" class="px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2">
-        <span>🌐</span> All Area Issues (Read-Only) <span id="badge-all-count" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full text-[10px]">0</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Main View Container -->
-  <div class="max-w-7xl mx-auto p-6">
-    
-    <!-- Tab Description Header -->
-    <div class="mb-6 bg-slate-900 border border-slate-800 p-4 rounded-2xl flex justify-between items-center">
+  <!-- DASHBOARD CONTEXT BANNER & TITLE -->
+  <div class="bg-slate-900/60 border-b border-slate-800/80 px-4 lg:px-8 py-5">
+    <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
       <div>
-        <h2 id="view-title" class="text-sm font-bold text-slate-100">My Registered Issues</h2>
-        <p id="view-description" class="text-xs text-slate-400 mt-0.5">Issues reported directly by Officer STF-8842 formatted like citizen tracking view.</p>
+        <div class="flex items-center gap-2">
+          <h2 class="text-lg font-bold text-white tracking-tight">Staff Operations Dashboard</h2>
+          <span id="activeDeptBadge" class="text-xs font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded-full">
+            Roads & Public Works (PWD)
+          </span>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Monitor, manage, assign and resolve citizen-reported infrastructure issues in real time.</p>
       </div>
-      <div id="view-status-pill" class="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold">
-        Officer Tracking
+
+      <div class="flex items-center gap-3 text-xs text-slate-400">
+        <span class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl font-mono text-[11px]">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Last Synced: <span id="lastSyncedText" class="text-slate-200 font-bold">Just now</span>
+        </span>
+        <button onclick="fetchComplaints()" class="text-indigo-400 hover:underline font-bold cursor-pointer">Sync Now</button>
       </div>
     </div>
+  </div>
 
-    <!-- Feed Container -->
-    <div id="feed-container" class="space-y-4">
-      <div class="p-8 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-2xl">Loading tickets...</div>
+  <!-- MAIN OPERATIONAL CONTENT AREA -->
+  <div class="max-w-[1600px] w-full mx-auto px-4 lg:px-8 py-6 flex-1 space-y-6">
+
+    <!-- SUMMARY STATISTICS ROW (4 COMPACT CARDS) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Card 1: My Reports -->
+      <div class="bg-slate-900/90 border border-slate-800/90 p-4 rounded-2xl shadow-xl space-y-2 hover:border-slate-700 transition">
+        <div class="flex justify-between items-center text-slate-400">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-indigo-400">My Reports</span>
+          <span class="text-base">👤</span>
+        </div>
+        <div class="flex items-baseline justify-between">
+          <p id="badge-my-count" class="text-2xl font-black text-white">0</p>
+          <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">+3 this week</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Filed by Officer STF-8842</p>
+      </div>
+
+      <!-- Card 2: Action Required -->
+      <div class="bg-slate-900/90 border border-slate-800/90 p-4 rounded-2xl shadow-xl space-y-2 hover:border-slate-700 transition">
+        <div class="flex justify-between items-center text-slate-400">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-400">Action Required</span>
+          <span class="text-base">🛠️</span>
+        </div>
+        <div class="flex items-baseline justify-between">
+          <p id="badge-dept-count" class="text-2xl font-black text-amber-400">0</p>
+          <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">Needs Attention</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Department Action Queue</p>
+      </div>
+
+      <!-- Card 3: In Progress -->
+      <div class="bg-slate-900/90 border border-slate-800/90 p-4 rounded-2xl shadow-xl space-y-2 hover:border-slate-700 transition">
+        <div class="flex justify-between items-center text-slate-400">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-sky-400">In Progress</span>
+          <span class="text-base">⏳</span>
+        </div>
+        <div class="flex items-baseline justify-between">
+          <p id="badge-progress-count" class="text-2xl font-black text-sky-400">0</p>
+          <span class="text-[10px] font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">Currently Active</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Field work under execution</p>
+      </div>
+
+      <!-- Card 4: Resolved -->
+      <div class="bg-slate-900/90 border border-slate-800/90 p-4 rounded-2xl shadow-xl space-y-2 hover:border-slate-700 transition">
+        <div class="flex justify-between items-center text-slate-400">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400">Resolved</span>
+          <span class="text-base">✅</span>
+        </div>
+        <div class="flex items-baseline justify-between">
+          <p id="badge-resolved-count" class="text-2xl font-black text-emerald-400">0</p>
+          <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Completed</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Verified & Fixed</p>
+      </div>
+
+    </div>
+
+    <!-- MAIN TWO-COLUMN WORKSPACE GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- LEFT 8-COLUMN MAIN FEED & TAB CONTAINER -->
+      <div class="lg:col-span-8 space-y-5">
+        
+        <!-- WORKSPACE NAVIGATION TABS -->
+        <div class="bg-slate-900/90 border border-slate-800/90 p-2 rounded-2xl shadow-xl flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:w-auto">
+            <button id="tab-my-issues" onclick="switchTab('my_issues')" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer bg-indigo-600 text-white shadow-md shadow-indigo-950">
+              <span>👤</span> My Reports <span id="badge-my-count-pill" class="bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-full text-[10px] font-mono">0</span>
+            </button>
+            <button id="tab-dept-action" onclick="switchTab('dept_action')" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+              <span>🛠️</span> Actionable Queue <span id="badge-dept-count-pill" class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full text-[10px] font-mono">0</span>
+            </button>
+            <button id="tab-area-all" onclick="switchTab('area_all')" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+              <span>🌐</span> Area Issues <span id="badge-all-count" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full text-[10px] font-mono">0</span>
+            </button>
+          </div>
+
+          <!-- Total Count Indicator -->
+          <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-400">
+            <span>Total Feed Items:</span>
+            <span id="badge-all-count-pill" class="font-mono font-bold text-indigo-400">0</span>
+          </div>
+        </div>
+
+        <!-- FILTER & SORT CONTROLS BAR -->
+        <div class="bg-slate-900/90 border border-slate-800/90 p-4 rounded-2xl shadow-xl space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h3 id="view-title" class="text-xs font-bold text-slate-200 uppercase tracking-wider">My Registered Reports</h3>
+            
+            <div id="view-status-pill" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              Citizen Tracking View Mode
+            </div>
+          </div>
+
+          <p id="view-description" class="text-xs text-slate-400">Personal log of issues filed under Officer ID STF-8842.</p>
+
+          <!-- Filter Dropdowns Row -->
+          <div class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center gap-2.5 text-xs">
+            <!-- Ward Filter -->
+            <select id="filterWard" onchange="filterStaffFeed()" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="all">All Wards</option>
+              <option value="Koramangala">Koramangala</option>
+              <option value="Indiranagar">Indiranagar</option>
+              <option value="Whitefield">Whitefield</option>
+              <option value="Jayanagar">Jayanagar</option>
+              <option value="HSR Layout">HSR Layout</option>
+            </select>
+
+            <!-- Status Filter -->
+            <select id="filterStatus" onchange="filterStaffFeed()" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="all">All Statuses</option>
+              <option value="OPEN">Open</option>
+              <option value="Under Review">Under Review</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+
+            <!-- Priority Filter -->
+            <select id="filterPriority" onchange="filterStaffFeed()" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="all">All Priorities</option>
+              <option value="HIGH">High Priority 🔴</option>
+              <option value="MEDIUM">Medium Priority 🟠</option>
+              <option value="LOW">Low Priority 🟢</option>
+            </select>
+
+            <!-- Clear Filters Button -->
+            <button onclick="clearStaffFilters()" class="text-slate-400 hover:text-white underline text-xs ml-auto cursor-pointer">
+              Clear Filters
+            </button>
+          </div>
+        </div>
+
+        <!-- MAIN FEED TICKET CONTAINER -->
+        <div id="feed-container" class="space-y-4">
+          <!-- Skeleton Loading Initial State -->
+          <div class="animate-pulse space-y-4">
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl h-44"></div>
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl h-44"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT 4-COLUMN AUXILIARY WIDGETS -->
+      <div class="lg:col-span-4 space-y-6">
+        
+        <!-- QUICK ACTIONS PANEL -->
+        <div class="bg-slate-900/90 border border-slate-800/90 p-5 rounded-2xl shadow-xl space-y-4">
+          <h3 class="text-xs font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2">
+            <span>⚡</span> Quick Actions
+          </h3>
+
+          <div class="space-y-2">
+            <button onclick="openComplaintModal()" class="w-full bg-slate-950 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 p-3 rounded-xl text-left flex items-center justify-between text-xs text-slate-200 font-semibold transition group cursor-pointer">
+              <span class="flex items-center gap-2.5">
+                <span class="text-base">➕</span> Register Field Issue
+              </span>
+              <span class="text-slate-500 group-hover:text-slate-200">→</span>
+            </button>
+
+            <button onclick="switchTab('dept_action')" class="w-full bg-slate-950 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 p-3 rounded-xl text-left flex items-center justify-between text-xs text-slate-200 font-semibold transition group cursor-pointer">
+              <span class="flex items-center gap-2.5">
+                <span class="text-base">🛠️</span> Actionable Department Queue
+              </span>
+              <span class="text-slate-500 group-hover:text-slate-200">→</span>
+            </button>
+
+            <button onclick="switchTab('area_all')" class="w-full bg-slate-950 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 p-3 rounded-xl text-left flex items-center justify-between text-xs text-slate-200 font-semibold transition group cursor-pointer">
+              <span class="flex items-center gap-2.5">
+                <span class="text-base">🔎</span> Browse All Area Reports
+              </span>
+              <span class="text-slate-500 group-hover:text-slate-200">→</span>
+            </button>
+
+            <button onclick="fetchComplaints()" class="w-full bg-slate-950 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 p-3 rounded-xl text-left flex items-center justify-between text-xs text-slate-200 font-semibold transition group cursor-pointer">
+              <span class="flex items-center gap-2.5">
+                <span class="text-base">🔄</span> Sync Live Department Data
+              </span>
+              <span class="text-slate-500 group-hover:text-slate-200">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- RECENT ACTIVITY TIMELINE -->
+        <div class="bg-slate-900/90 border border-slate-800/90 p-5 rounded-2xl shadow-xl space-y-4">
+          <h3 class="text-xs font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2">
+            <span>🕒</span> Recent Department Activity
+          </h3>
+
+          <div id="recentActivityList" class="space-y-3 text-xs">
+            <div class="flex gap-3 items-start p-2.5 bg-slate-950 border border-slate-800/80 rounded-xl">
+              <span class="text-emerald-400">✓</span>
+              <div>
+                <p class="font-bold text-slate-200">TICK-904956 Auto-Routed</p>
+                <p class="text-[11px] text-slate-400">Assigned to Suresh Gowda [EMP-201].</p>
+                <span class="text-[10px] text-slate-500 font-mono">10m ago</span>
+              </div>
+            </div>
+            <div class="flex gap-3 items-start p-2.5 bg-slate-950 border border-slate-800/80 rounded-xl">
+              <span class="text-indigo-400">📸</span>
+              <div>
+                <p class="font-bold text-slate-200">New Incident Filed in Indiranagar</p>
+                <p class="text-[11px] text-slate-400">Garbage issue logged by citizen.</p>
+                <span class="text-[10px] text-slate-500 font-mono">25m ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEPARTMENT WORKLOAD PROGRESS -->
+        <div class="bg-slate-900/90 border border-slate-800/90 p-5 rounded-2xl shadow-xl space-y-4">
+          <h3 class="text-xs font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2.5 flex items-center gap-2">
+            <span>📈</span> Department Workload Allocation
+          </h3>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="flex justify-between text-slate-300 font-medium mb-1">
+                <span>Roads & Public Works (PWD)</span>
+                <span class="font-mono text-indigo-400 font-bold">78%</span>
+              </div>
+              <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                <div class="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" style="width: 78%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-slate-300 font-medium mb-1">
+                <span>Waste & Sanitation</span>
+                <span class="font-mono text-amber-400 font-bold">54%</span>
+              </div>
+              <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                <div class="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" style="width: 54%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-slate-300 font-medium mb-1">
+                <span>Electrical & Streetlighting</span>
+                <span class="font-mono text-sky-400 font-bold">32%</span>
+              </div>
+              <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                <div class="h-full bg-gradient-to-r from-sky-500 to-blue-500 rounded-full" style="width: 32%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
 
   </div>
 
-  <!-- Register Complaint Modal -->
+  <!-- ISSUE INSPECTION DETAIL MODAL / DRAWER -->
+  <div id="detail-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-base">📋</span>
+          <h3 id="modal-ticket-id" class="text-base font-bold text-white font-mono">TICK-XXXXXX</h3>
+          <span id="modal-status-pill" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold">
+            OPEN
+          </span>
+        </div>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-white text-lg font-bold cursor-pointer">✕</button>
+      </div>
+
+      <div id="modal-detail-content" class="space-y-4">
+        <!-- Injected dynamically -->
+      </div>
+
+      <div class="flex justify-end pt-3 border-t border-slate-800">
+        <button onclick="closeDetailModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER FIELD INCIDENT MODAL (PRESERVED) -->
   <div id="register-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-5">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
           <span>📸</span> Field Incident Registration
         </h3>
-        <button onclick="closeComplaintModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+        <button onclick="closeComplaintModal()" class="text-slate-400 hover:text-white text-lg font-bold cursor-pointer">✕</button>
       </div>
 
       <form id="staff-complaint-form" onsubmit="handleCitizenComplaintSubmit(event)" class="space-y-4">
@@ -109,14 +453,14 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Contact Phone</label>
-          <input type="tel" id="citizen-phone" placeholder="+91 9876543210" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" />
+          <input type="tel" id="citizen-phone" placeholder="+91 9876543210" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" />
         </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Location Details</label>
           <div class="flex gap-2">
-            <input type="text" id="citizen-location" required placeholder="Street / Landmark / GPS Coordinates" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" />
-            <button type="button" onclick="getGPSLocation()" class="px-3 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 rounded-xl text-xs font-bold border border-indigo-500/30 shrink-0 flex items-center gap-1">
+            <input type="text" id="citizen-location" required placeholder="Street / Landmark / GPS Coordinates" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" />
+            <button type="button" onclick="getGPSLocation()" class="px-3 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 rounded-xl text-xs font-bold border border-indigo-500/30 shrink-0 flex items-center gap-1 cursor-pointer">
               📍 GPS
             </button>
           </div>
@@ -124,19 +468,20 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Description</label>
-          <textarea id="citizen-description" rows="3" placeholder="Describe the issue observed in field..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
+          <textarea id="citizen-description" rows="3" placeholder="Describe the issue observed in field..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
         </div>
 
         <div id="modal-status" class="hidden text-xs p-2.5 rounded-xl"></div>
 
         <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
-          <button type="button" onclick="closeComplaintModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition">Cancel</button>
-          <button type="submit" id="submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/20">Submit Incident</button>
+          <button type="button" onclick="closeComplaintModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition cursor-pointer">Cancel</button>
+          <button type="submit" id="submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow-lg shadow-indigo-600/20 cursor-pointer">Submit Incident</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- SCRIPT LOGIC (100% PRESERVED & EXTENDED) -->
   <script>
     const API_BASE = 'http://localhost:3000/api';
     const CURRENT_OFFICER_ID = 'STF-8842';
@@ -155,12 +500,24 @@
       fetchComplaints();
     });
 
+    function toggleNotifications() {
+      const pop = document.getElementById('notificationsPopover');
+      pop.classList.toggle('hidden');
+    }
+
+    function toggleProfileMenu() {
+      const pop = document.getElementById('profilePopover');
+      pop.classList.toggle('hidden');
+    }
+
     function getLoggedDepartment() {
       return document.getElementById('staff-dept-select').value;
     }
 
     function switchStaffDepartment() {
-      localStorage.setItem('staffDept', getLoggedDepartment());
+      const dept = getLoggedDepartment();
+      localStorage.setItem('staffDept', dept);
+      document.getElementById('activeDeptBadge').innerText = dept;
       renderCurrentTab();
     }
 
@@ -170,42 +527,101 @@
         const data = await res.json();
         
         if (data.success) {
-          allComplaints = data.complaints;
+          allComplaints = data.complaints || [];
+          document.getElementById('lastSyncedText').innerText = new Date().toLocaleTimeString();
           updateBadges();
           renderCurrentTab();
         }
       } catch (err) {
         console.error('Failed to load tickets:', err);
         document.getElementById('feed-container').innerHTML = `
-          <div class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-center text-xs">
-            Unable to connect to backend server at ${API_BASE}.
+          <div class="p-6 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-2xl text-center text-xs space-y-2">
+            <p class="font-bold">⚠️ Connection Error</p>
+            <p>Unable to connect to backend server at ${API_BASE}. Make sure server.js is running.</p>
+            <button onclick="fetchComplaints()" class="px-3 py-1 bg-rose-950 border border-rose-800 rounded-lg text-white text-[11px] font-bold">Retry Connection</button>
           </div>`;
       }
     }
 
     function updateBadges() {
-      const myCount = allComplaints.filter(t => (t.officerId === CURRENT_OFFICER_ID || t.assigned_to_employee_id === CURRENT_OFFICER_ID)).length;
       const loggedDept = getLoggedDepartment();
-      const deptCount = allComplaints.filter(t => (t.department === loggedDept || t.department_id === loggedDept) && t.status !== 'Resolved').length;
+      const myComplaints = allComplaints.filter(t => (t.officerId === CURRENT_OFFICER_ID || t.assigned_to_employee_id === CURRENT_OFFICER_ID));
+      const deptComplaints = allComplaints.filter(t => (t.department === loggedDept || t.department_id === loggedDept) && t.status !== 'Resolved');
+      const progressComplaints = allComplaints.filter(t => t.status === 'In Progress' || t.status === 'Under Review');
+      const resolvedComplaints = allComplaints.filter(t => t.status === 'Resolved');
 
-      document.getElementById('badge-my-count').innerText = myCount;
-      document.getElementById('badge-dept-count').innerText = deptCount;
+      document.getElementById('badge-my-count').innerText = myComplaints.length;
+      document.getElementById('badge-my-count-pill').innerText = myComplaints.length;
+      
+      document.getElementById('badge-dept-count').innerText = deptComplaints.length;
+      document.getElementById('badge-dept-count-pill').innerText = deptComplaints.length;
+      
+      document.getElementById('badge-progress-count').innerText = progressComplaints.length;
+      document.getElementById('badge-resolved-count').innerText = resolvedComplaints.length;
+      
       document.getElementById('badge-all-count').innerText = allComplaints.length;
+      document.getElementById('badge-all-count-pill').innerText = allComplaints.length;
     }
 
     function switchTab(tabKey) {
       currentTab = tabKey;
 
-      ['my_issues', 'dept_action', 'area_all'].forEach(k => {
-        const btn = document.getElementById(`tab-${k.replace('_', '-')}`);
-        if (k === tabKey) {
-          btn.className = 'px-4 py-2.5 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 transition flex items-center gap-2';
+      const tabDefs = {
+        'my_issues': { id: 'tab-my-issues', activeClass: 'px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer bg-indigo-600 text-white shadow-md shadow-indigo-950' },
+        'dept_action': { id: 'tab-dept-action', activeClass: 'px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer bg-amber-600 text-white shadow-md shadow-amber-950' },
+        'area_all': { id: 'tab-area-all', activeClass: 'px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer bg-slate-800 text-white shadow-md' }
+      };
+
+      const inactiveClass = 'px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-800/60';
+
+      Object.keys(tabDefs).forEach(key => {
+        const btn = document.getElementById(tabDefs[key].id);
+        if (key === tabKey) {
+          btn.className = tabDefs[key].activeClass;
         } else {
-          btn.className = 'px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2';
+          btn.className = inactiveClass;
         }
       });
 
       renderCurrentTab();
+    }
+
+    function clearStaffFilters() {
+      document.getElementById('filterWard').value = 'all';
+      document.getElementById('filterStatus').value = 'all';
+      document.getElementById('filterPriority').value = 'all';
+      document.getElementById('globalSearchInput').value = '';
+      renderCurrentTab();
+    }
+
+    function filterStaffFeed() {
+      renderCurrentTab();
+    }
+
+    function getFilteredTickets(baseTickets) {
+      const ward = document.getElementById('filterWard').value.toLowerCase();
+      const status = document.getElementById('filterStatus').value.toLowerCase();
+      const priority = document.getElementById('filterPriority').value.toLowerCase();
+      const search = document.getElementById('globalSearchInput').value.toLowerCase();
+
+      return baseTickets.filter(ticket => {
+        const matchesWard = ward === 'all' || (ticket.ward || '').toLowerCase().includes(ward);
+        const matchesStatus = status === 'all' || (ticket.status || '').toLowerCase().includes(status);
+        
+        let itemPriority = 'low';
+        if ((ticket.category || '').toLowerCase().includes('pothole') || (ticket.category || '').toLowerCase().includes('road')) itemPriority = 'high';
+        else if ((ticket.category || '').toLowerCase().includes('garbage') || (ticket.category || '').toLowerCase().includes('water')) itemPriority = 'medium';
+
+        const matchesPriority = priority === 'all' || itemPriority === priority;
+
+        const matchesSearch = !search || 
+          (ticket.description || '').toLowerCase().includes(search) ||
+          (ticket.category || '').toLowerCase().includes(search) ||
+          (ticket.ward || '').toLowerCase().includes(search) ||
+          (ticket.ticketId || ticket.id || '').toLowerCase().includes(search);
+
+        return matchesWard && matchesStatus && matchesPriority && matchesSearch;
+      });
     }
 
     function renderCurrentTab() {
@@ -213,124 +629,188 @@
       const loggedDept = getLoggedDepartment();
 
       if (currentTab === 'my_issues') {
-        document.getElementById('view-title').innerText = "My Filed Field Reports";
+        document.getElementById('view-title').innerText = "My Registered Field Reports";
         document.getElementById('view-description').innerText = "Personal log of issues filed under Officer ID STF-8842.";
-        document.getElementById('view-status-pill').innerText = "Citizen View Mode";
+        document.getElementById('view-status-pill').innerText = "Citizen Tracking View Mode";
 
         const myComplaints = allComplaints.filter(t => (t.officerId === CURRENT_OFFICER_ID || t.assigned_to_employee_id === CURRENT_OFFICER_ID));
-        renderCitizenStyleFeed(myComplaints);
+        renderCitizenStyleFeed(getFilteredTickets(myComplaints));
 
       } else if (currentTab === 'dept_action') {
-        document.getElementById('view-title').innerText = `Actionable Queue - ${loggedDept}`;
+        document.getElementById('view-title').innerText = `Actionable Department Queue - ${loggedDept}`;
         document.getElementById('view-description').innerText = `Issues assigned exclusively to ${loggedDept}. You are authorized to resolve these.`;
         document.getElementById('view-status-pill').innerText = "Action Permission: ALLOWED";
 
         const deptComplaints = allComplaints.filter(t => (t.department === loggedDept || t.department_id === loggedDept));
-        renderActionableDepartmentFeed(deptComplaints);
+        renderActionableDepartmentFeed(getFilteredTickets(deptComplaints));
 
       } else if (currentTab === 'area_all') {
         document.getElementById('view-title').innerText = "Area Overview (All Departments)";
         document.getElementById('view-description').innerText = "Full visibility of all incidents logged in your area. Resolving is disabled for issues outside your logged department.";
         document.getElementById('view-status-pill').innerText = "Read-Only Overview Mode";
 
-        renderReadOnlyFeed(allComplaints);
+        renderReadOnlyFeed(getFilteredTickets(allComplaints));
       }
     }
 
     function renderCitizenStyleFeed(tickets) {
       const container = document.getElementById('feed-container');
       if (!tickets || tickets.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-2xl">You have not registered any field issues yet.</div>`;
+        container.innerHTML = `
+          <div class="p-8 text-center bg-slate-900/90 border border-slate-800/80 rounded-2xl space-y-3">
+            <div class="w-12 h-12 mx-auto rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-xl text-slate-500">📋</div>
+            <p class="text-xs font-bold text-slate-200">No reports registered yet</p>
+            <p class="text-[11px] text-slate-400 max-w-sm mx-auto">You haven't filed any field issues under this department filter.</p>
+            <button onclick="openComplaintModal()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition">
+              + Register Field Issue
+            </button>
+          </div>
+        `;
         return;
       }
 
-      container.innerHTML = tickets.map(ticket => `
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-          <div class="flex justify-between items-start">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">${ticket.ticketId || ticket.id || ticket.ticket_id}</span>
-                <span class="text-xs font-semibold text-slate-300 bg-slate-800 px-2 py-0.5 rounded">${ticket.category}</span>
-                <span class="text-[10px] font-semibold text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">🏢 Assigned: ${ticket.department || ticket.department_id}</span>
+      container.innerHTML = tickets.map(ticket => {
+        const ticketId = ticket.ticketId || ticket.id || ticket.ticket_id;
+        const isResolved = ticket.status === 'Resolved';
+        const isHighPriority = (ticket.category || '').toLowerCase().includes('pothole') || (ticket.category || '').toLowerCase().includes('road');
+
+        return `
+          <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-5 space-y-4 hover:border-slate-700 transition group shadow-xl">
+            
+            <div class="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800/60 pb-3">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">#${ticketId}</span>
+                  <span class="text-xs font-semibold text-slate-300 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded">${ticket.category}</span>
+                  <span class="text-[10px] font-semibold text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded">🏢 ${ticket.department || ticket.department_id}</span>
+                </div>
+                <h3 class="text-sm font-bold text-slate-100 pt-1">"${ticket.description}"</h3>
               </div>
-              <h3 class="text-sm font-bold text-slate-100 pt-1">${ticket.description}</h3>
-            </div>
-            <span class="text-xs font-bold px-2.5 py-1 rounded-full ${
-              ticket.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-            }">${ticket.status}</span>
-          </div>
 
-          <div class="flex items-center gap-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
-            <div>
-              <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Before Image</span>
-              <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-16 h-16 object-cover rounded-lg bg-slate-800" />
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isHighPriority ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                  ${isHighPriority ? '🔴 HIGH PRIORITY' : '🟠 MEDIUM PRIORITY'}
+                </span>
+                <span class="text-xs font-bold px-2.5 py-1 rounded-full ${isResolved ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                  ${isResolved ? '✓ Resolved' : '● ' + (ticket.status || 'OPEN')}
+                </span>
+              </div>
             </div>
-            <div>
-              <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">After Image</span>
-              ${ticket.afterImage 
-                ? `<img src="${ticket.afterImage}" class="w-16 h-16 object-cover rounded-lg border border-emerald-500/40 bg-slate-800" />`
-                : `<div class="w-16 h-16 rounded-lg border border-dashed border-slate-700 bg-slate-900 flex items-center justify-center text-[10px] text-slate-500">In Progress</div>`
-              }
-            </div>
-          </div>
 
-          <div class="flex justify-between items-center text-xs text-slate-400 border-t border-slate-800 pt-3">
-            <span>📍 ${ticket.location || (ticket.coords ? `GPS: ${ticket.coords.latitude}, ${ticket.coords.longitude}` : 'Location recorded')}</span>
-            <span>🕒 Filed: ${new Date(ticket.createdAt || ticket.created_at || Date.now()).toLocaleString()}</span>
+            <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+              <div class="flex items-center gap-3">
+                <div>
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Before Photo</span>
+                  <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-16 h-16 object-cover rounded-xl bg-slate-900 border border-slate-800" />
+                </div>
+                <div>
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">After Photo</span>
+                  ${ticket.afterImage 
+                    ? `<img src="${ticket.afterImage}" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/40 bg-slate-900" />`
+                    : `<div class="w-16 h-16 rounded-xl border border-dashed border-slate-700 bg-slate-900 flex items-center justify-center text-[10px] text-slate-500">In Progress</div>`
+                  }
+                </div>
+              </div>
+
+              <div class="text-xs text-slate-400 space-y-1 sm:ml-auto">
+                <p>📍 Location: <strong class="text-slate-200">${ticket.ward || 'Koramangala'}</strong> (${ticket.location || (ticket.coords ? `${ticket.coords.latitude}, ${ticket.coords.longitude}` : 'GPS Stamped')})</p>
+                <p>🕒 Filed: <span class="font-mono text-slate-300">${new Date(ticket.createdAt || ticket.created_at || Date.now()).toLocaleString()}</span></p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs border-t border-slate-800/80 pt-3">
+              <button onclick="openDetailModal('${ticketId}')" class="text-indigo-400 hover:underline font-bold flex items-center gap-1 cursor-pointer">
+                <span>🔎</span> View Issue Inspection Details
+              </button>
+              <span class="text-[11px] text-slate-500 font-mono">Officer Log: STF-8842</span>
+            </div>
+
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function renderActionableDepartmentFeed(tickets) {
       const container = document.getElementById('feed-container');
+      const loggedDept = getLoggedDepartment();
+
       if (!tickets || tickets.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-2xl">No open issues currently assigned to ${getLoggedDepartment()}.</div>`;
+        container.innerHTML = `
+          <div class="p-8 text-center bg-slate-900/90 border border-slate-800/80 rounded-2xl space-y-3">
+            <div class="w-12 h-12 mx-auto rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-xl text-emerald-400">✅</div>
+            <p class="text-xs font-bold text-slate-200">No open issues in Department Queue</p>
+            <p class="text-[11px] text-slate-400 max-w-sm mx-auto">All assigned issues for ${loggedDept} have been handled.</p>
+          </div>
+        `;
         return;
       }
 
-      container.innerHTML = tickets.map(ticket => `
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-          <div class="flex justify-between items-start">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">${ticket.ticketId || ticket.id || ticket.ticket_id}</span>
-                <span class="text-xs font-semibold text-slate-300 bg-slate-800 px-2 py-0.5 rounded">${ticket.category}</span>
-              </div>
-              <h3 class="text-sm font-bold text-slate-100 pt-1">${ticket.description}</h3>
-            </div>
-            <span class="text-xs font-bold px-2.5 py-1 rounded-full ${
-              ticket.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-            }">${ticket.status}</span>
-          </div>
+      container.innerHTML = tickets.map(ticket => {
+        const ticketId = ticket.ticketId || ticket.id || ticket.ticket_id;
+        const isResolved = ticket.status === 'Resolved';
+        const isHighPriority = (ticket.category || '').toLowerCase().includes('pothole') || (ticket.category || '').toLowerCase().includes('road');
 
-          <div class="flex items-center gap-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
-            <div>
-              <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Before Picture</span>
-              <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-16 h-16 object-cover rounded-lg bg-slate-800" />
-            </div>
-            <div>
-              <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">After Picture</span>
-              ${ticket.afterImage 
-                ? `<img src="${ticket.afterImage}" class="w-16 h-16 object-cover rounded-lg border border-emerald-500/40 bg-slate-800" />`
-                : `<div class="w-16 h-16 rounded-lg border border-dashed border-slate-700 bg-slate-900 flex items-center justify-center text-[10px] text-slate-500">Pending Fix</div>`
-              }
-            </div>
-          </div>
-
-          ${ticket.status !== 'Resolved' ? `
-            <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
-              <div class="flex items-center gap-2">
-                <label class="text-xs text-slate-400 font-medium">Upload Resolution Photo:</label>
-                <input type="file" id="after-img-${ticket.ticketId || ticket.id}" accept="image/*" class="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 cursor-pointer"/>
+        return `
+          <div class="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-5 space-y-4 hover:border-slate-700 transition shadow-xl">
+            
+            <div class="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800/60 pb-3">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded ${isHighPriority ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                    ${isHighPriority ? '🔴 HIGH PRIORITY' : '🟠 MEDIUM PRIORITY'}
+                  </span>
+                  <span class="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">#${ticketId}</span>
+                  <span class="text-xs font-semibold text-slate-300 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded">${ticket.category}</span>
+                </div>
+                <h3 class="text-sm font-bold text-slate-100 pt-1">"${ticket.description}"</h3>
               </div>
-              <button onclick="resolveWithAfterImage('${ticket.ticketId || ticket.id}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition shadow-lg shadow-emerald-600/20">
-                Mark Resolved
-              </button>
+
+              <span class="text-xs font-bold px-2.5 py-1 rounded-full ${isResolved ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                ${isResolved ? '✓ Resolved' : '● ' + (ticket.status || 'Awaiting Action')}
+              </span>
             </div>
-          ` : ''}
-        </div>
-      `).join('');
+
+            <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
+              <div class="flex items-center gap-3">
+                <div>
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Citizen Photo</span>
+                  <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-16 h-16 object-cover rounded-xl bg-slate-900 border border-slate-800" />
+                </div>
+                <div>
+                  <span class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Resolution Photo</span>
+                  ${ticket.afterImage 
+                    ? `<img src="${ticket.afterImage}" class="w-16 h-16 object-cover rounded-xl border border-emerald-500/40 bg-slate-900" />`
+                    : `<div class="w-16 h-16 rounded-xl border border-dashed border-slate-700 bg-slate-900 flex items-center justify-center text-[10px] text-slate-500">Pending Fix</div>`
+                  }
+                </div>
+              </div>
+
+              <div class="text-xs text-slate-400 space-y-1 sm:ml-auto">
+                <p>📍 Area: <strong class="text-slate-200">${ticket.ward || 'Koramangala'}</strong></p>
+                <p>👤 Assigned Officer: <span class="text-indigo-400 font-bold">${ticket.assigned_officer_name || 'BBMP Ward Engineer'}</span></p>
+              </div>
+            </div>
+
+            ${!isResolved ? `
+              <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
+                <div class="flex items-center gap-2">
+                  <label class="text-xs text-slate-400 font-semibold">Attach Resolution Photo:</label>
+                  <input type="file" id="after-img-${ticketId}" accept="image/*" class="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-slate-800 file:text-indigo-400 hover:file:bg-slate-700 cursor-pointer"/>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="openDetailModal('${ticketId}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition cursor-pointer">
+                    Inspect Issue
+                  </button>
+                  <button onclick="resolveWithAfterImage('${ticketId}')" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-lg shadow-emerald-950/60 cursor-pointer">
+                    Mark Resolved ✅
+                  </button>
+                </div>
+              </div>
+            ` : ''}
+
+          </div>
+        `;
+      }).join('');
     }
 
     function renderReadOnlyFeed(tickets) {
@@ -338,49 +818,117 @@
       const loggedDept = getLoggedDepartment();
 
       if (!tickets || tickets.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs bg-slate-900 border border-slate-800 rounded-2xl">No tickets found in the area.</div>`;
+        container.innerHTML = `
+          <div class="p-8 text-center bg-slate-900/90 border border-slate-800/80 rounded-2xl space-y-3">
+            <div class="w-12 h-12 mx-auto rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-xl text-slate-500">🌐</div>
+            <p class="text-xs font-bold text-slate-200">No area issues found</p>
+          </div>
+        `;
         return;
       }
 
       container.innerHTML = tickets.map(ticket => {
+        const ticketId = ticket.ticketId || ticket.id || ticket.ticket_id;
         const belongsToLoggedDept = (ticket.department === loggedDept || ticket.department_id === loggedDept);
+        const isResolved = ticket.status === 'Resolved';
 
         return `
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-          <div class="flex justify-between items-start">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">${ticket.ticketId || ticket.id || ticket.ticket_id}</span>
-                <span class="text-xs font-semibold text-slate-300 bg-slate-800 px-2 py-0.5 rounded">${ticket.category}</span>
-                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded ${belongsToLoggedDept ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800 text-slate-400'}">
-                  🏢 ${ticket.department || ticket.department_id}
-                </span>
-              </div>
-              <h3 class="text-sm font-bold text-slate-100 pt-1">${ticket.description}</h3>
-            </div>
+          <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-5 space-y-4 hover:border-slate-700 transition shadow-xl">
             
-            <span class="text-xs font-bold px-2.5 py-1 rounded-full ${
-              ticket.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-            }">${ticket.status}</span>
-          </div>
-
-          <div class="flex items-center gap-4 bg-slate-950/40 p-3 rounded-xl border border-slate-800">
-            <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-16 h-16 object-cover rounded-lg bg-slate-800" />
-            <div class="text-xs text-slate-400 space-y-1">
-              <p>📍 Location: <strong class="text-slate-200">${ticket.location || (ticket.coords ? `${ticket.coords.latitude}, ${ticket.coords.longitude}` : 'N/A')}</strong></p>
-              <p>🕒 Filed: ${new Date(ticket.createdAt || ticket.created_at || Date.now()).toLocaleString()}</p>
+            <div class="flex justify-between items-start">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">#${ticketId}</span>
+                  <span class="text-xs font-semibold text-slate-300 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded">${ticket.category}</span>
+                  <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded ${belongsToLoggedDept ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-950 text-slate-400 border border-slate-800'}">
+                    🏢 ${ticket.department || ticket.department_id}
+                  </span>
+                </div>
+                <h3 class="text-sm font-bold text-slate-100 pt-1">"${ticket.description}"</h3>
+              </div>
+              
+              <span class="text-xs font-bold px-2.5 py-1 rounded-full ${isResolved ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                ${isResolved ? '✓ Resolved' : '● ' + (ticket.status || 'OPEN')}
+              </span>
             </div>
-          </div>
 
-          <div class="flex items-center justify-between text-xs border-t border-slate-800 pt-3">
-            ${belongsToLoggedDept 
-              ? `<span class="text-emerald-400 font-semibold">✔ Belongs to your department (${loggedDept}) — Go to "Actionable Queue" tab to resolve.</span>`
-              : `<span class="text-slate-500 italic">🔒 Restricted: Belongs to ${ticket.department || ticket.department_id}. Only officers from that department can resolve this.</span>`
+            <div class="flex items-center gap-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+              <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-16 h-16 object-cover rounded-xl bg-slate-900 border border-slate-800" />
+              <div class="text-xs text-slate-400 space-y-1">
+                <p>📍 Location: <strong class="text-slate-200">${ticket.ward || 'Koramangala'}</strong> (${ticket.location || (ticket.coords ? `${ticket.coords.latitude}, ${ticket.coords.longitude}` : 'N/A')})</p>
+                <p>🕒 Filed: <span class="font-mono text-slate-300">${new Date(ticket.createdAt || ticket.created_at || Date.now()).toLocaleString()}</span></p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs border-t border-slate-800/80 pt-3">
+              ${belongsToLoggedDept 
+                ? `<span class="text-emerald-400 font-semibold">✔ Belongs to your department (${loggedDept}) — Go to "Actionable Queue" tab to resolve.</span>`
+                : `<span class="text-slate-500 italic">🔒 Restricted: Belongs to ${ticket.department || ticket.department_id}. Only officers from that department can resolve.</span>`
+              }
+              <button onclick="openDetailModal('${ticketId}')" class="text-indigo-400 hover:underline font-bold cursor-pointer">View Details</button>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openDetailModal(ticketId) {
+      const ticket = allComplaints.find(t => (t.ticketId === ticketId || t.id === ticketId || t.ticket_id === ticketId));
+      if (!ticket) return;
+
+      document.getElementById('modal-ticket-id').innerText = `#${ticket.ticketId || ticket.id}`;
+      document.getElementById('modal-status-pill').innerText = ticket.status || 'OPEN';
+
+      const content = document.getElementById('modal-detail-content');
+      content.innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <p class="text-[10px] font-bold uppercase text-slate-400 mb-1">Before Image (Citizen Report)</p>
+            <img src="${ticket.beforeImage || ticket.image || ticket.imageBase64}" class="w-full h-40 object-cover rounded-xl border border-slate-800 bg-slate-950" />
+          </div>
+          <div>
+            <p class="text-[10px] font-bold uppercase text-slate-400 mb-1">Resolution Photo</p>
+            ${ticket.afterImage 
+              ? `<img src="${ticket.afterImage}" class="w-full h-40 object-cover rounded-xl border border-emerald-500/40 bg-slate-950" />`
+              : `<div class="w-full h-40 rounded-xl border border-dashed border-slate-800 bg-slate-950 flex flex-col items-center justify-center text-slate-500 text-xs gap-1"><span>📷</span> No Resolution Image Attached Yet</div>`
             }
           </div>
         </div>
+
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+          <div class="flex justify-between border-b border-slate-800/80 pb-2">
+            <span class="text-slate-400">Category:</span>
+            <span class="font-bold text-slate-200">${ticket.category}</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-800/80 pb-2">
+            <span class="text-slate-400">Assigned Department:</span>
+            <span class="font-bold text-indigo-400">${ticket.department || ticket.department_id}</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-800/80 pb-2">
+            <span class="text-slate-400">Assigned Officer:</span>
+            <span class="font-bold text-slate-200">${ticket.assigned_officer_name || 'BBMP Ward Engineer'} [${ticket.assigned_to_employee_id || 'EMP-201'}]</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-800/80 pb-2">
+            <span class="text-slate-400">Ward Location:</span>
+            <span class="font-bold text-slate-200">${ticket.ward || 'Koramangala'}</span>
+          </div>
+          <div class="flex justify-between border-b border-slate-800/80 pb-2">
+            <span class="text-slate-400">GPS Coordinates:</span>
+            <span class="font-mono text-emerald-400 font-bold">${ticket.coords ? `${ticket.coords.latitude}, ${ticket.coords.longitude}` : (ticket.latitude ? `${ticket.latitude}, ${ticket.longitude}` : '12.9344, 77.6101')}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Description:</span>
+            <span class="font-medium text-slate-200 max-w-xs text-right">"${ticket.description}"</span>
+          </div>
+        </div>
       `;
-      }).join('');
+
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
     }
 
     async function resolveWithAfterImage(ticketId) {
@@ -424,6 +972,7 @@
     function closeComplaintModal() {
       document.getElementById('register-modal').classList.add('hidden');
       document.getElementById('staff-complaint-form').reset();
+      document.getElementById('modal-status').classList.add('hidden');
     }
 
     function handleImageCaptured() {

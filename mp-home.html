@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MP Dashboard | Constituency Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-[#0f172a] text-slate-200 font-sans min-h-screen pb-12">
+
+  <header class="bg-[#1e293b] border-b border-slate-800 px-6 py-4 flex justify-between items-center max-w-7xl mx-auto rounded-b-xl shadow-md">
+    <div class="flex items-center gap-2">
+      <span class="text-amber-500 text-xl">⚡</span>
+      <h1 class="text-base font-bold text-white tracking-tight">MP Constituency Hub</h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="detectedConstituency" class="text-xs font-mono bg-amber-500/10 border border-amber-500/20 text-amber-400 px-3 py-1 rounded-md uppercase tracking-wider">📍 Constituency: Bengaluru</span>
+      <span class="text-xs font-semibold bg-slate-800 text-slate-300 px-3 py-1 rounded-full">📍 Parliamentary Account</span>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- LEFT PANE: SEARCH, FILTERS, AND DYNAMIC FEEDS -->
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- Search & Filters Container -->
+      <div class="bg-[#1e293b] p-5 rounded-xl border border-slate-800 shadow-md space-y-4">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="text" id="searchBar" oninput="renderFeeds()" placeholder="🔍 Search issues by title, category, or location..." class="flex-grow bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400 whitespace-nowrap">Scope:</span>
+            <select id="constituencyToggle" onchange="renderFeeds()" class="bg-[#0f172a] border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+              <option value="mine">My Constituency Only</option>
+              <option value="all">All National Issues</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="flex flex-wrap gap-2 items-center text-xs">
+          <span class="text-slate-500 uppercase font-bold text-[9px] tracking-wider mr-1">Quick Filters:</span>
+          
+          <select id="filterStatus" onchange="renderFeeds()" class="bg-[#0f172a] border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+            <option value="all">Status: All</option>
+            <option value="pending">Status: Pending</option>
+            <option value="Resolved">Status: Resolved</option>
+          </select>
+          
+          <select id="filterCategory" onchange="renderFeeds()" class="bg-[#0f172a] border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+            <option value="all">Category: All</option>
+            <option value="Roads">Roads</option>
+            <option value="Garbage">Garbage</option>
+            <option value="Street Lights">Street Lights</option>
+            <option value="Water Supply">Water Supply</option>
+            <option value="Electricity">Electricity</option>
+            <option value="Drainage">Drainage</option>
+            <option value="Safety">Safety</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Education">Education</option>
+            <option value="Transport">Transport</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Feed Section -->
+      <div>
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+          <span>📋</span> Top Priority Constituency Grievances (Sorted by Votes)
+        </h2>
+        <div id="mpFeed" class="space-y-4">
+          <!-- Dynamic cards go here -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDEBAR: PROFILE AND STATS -->
+    <div class="space-y-6">
+      
+      <!-- MP Profile Card -->
+      <div class="bg-[#1e293b] p-6 rounded-xl border border-slate-800 shadow-md space-y-4">
+        <h2 class="text-xs font-bold text-white uppercase tracking-widest border-b border-slate-800 pb-3 flex items-center gap-2">
+          <span>👤</span> MP Profile
+        </h2>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between"><span class="text-slate-400">Name:</span> <span id="profileName" class="font-semibold text-slate-200">Shri Ananth Kumar</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Aadhaar:</span> <span id="profileAadhaar" class="font-mono text-slate-200">XXXX-XXXX-5678</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Constituency:</span> <span id="profileConstituency" class="text-slate-200">Bengaluru</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">MP ID:</span> <span id="profileMpId" class="font-mono text-slate-200">MP001</span></div>
+          
+          <div class="border-t border-slate-800/80 my-2 pt-2 space-y-2">
+            <div class="flex justify-between"><span class="text-slate-400">Constituency Resolved:</span> <span id="profileResolvedCount" class="font-bold text-emerald-400">0</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Constituency Pending:</span> <span id="profilePendingCount" class="font-bold text-amber-400">0</span></div>
+          </div>
+        </div>
+        <button onclick="logout()" class="w-full mt-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-lg text-xs tracking-wider uppercase transition cursor-pointer">
+          🚪 Logout / Exit console
+        </button>
+      </div>
+
+      <!-- Quick Tips for MP Portal -->
+      <div class="bg-[#1e293b] p-6 rounded-xl border border-slate-800 shadow-md space-y-3">
+        <h3 class="text-xs font-bold text-white uppercase tracking-wider">💡 Operational Guidelines</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Grievances displayed here are prioritized dynamically based on citizen votes, recency, and public commenting activity.
+        </p>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          When initiating works, update the status to <b>In Progress</b>. Upon completion, mark it as <b>Resolved</b> to instantly notify the citizens.
+        </p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let currentUser = null;
+    let mpCoords = { latitude: 12.9716, longitude: 77.5946 }; // Default center
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const userStr = localStorage.getItem('currentUser');
+      if (!userStr) {
+        window.location.href = 'login.html';
+        return;
+      }
+      currentUser = JSON.parse(userStr);
+
+      if (currentUser.role !== 'mp') {
+        window.location.href = 'citizen-home.html';
+        return;
+      }
+
+      // Load Profile Info
+      document.getElementById('profileName').innerText = currentUser.name;
+      document.getElementById('profileConstituency').innerText = currentUser.constituency;
+      document.getElementById('profileMpId').innerText = currentUser.mpId;
+      document.getElementById('detectedConstituency').innerText = `📍 Constituency: ${currentUser.constituency}`;
+      
+      if (currentUser.aadhaar) {
+        const masked = currentUser.aadhaar.substring(0, 4) + "-XXXX-" + currentUser.aadhaar.substring(8);
+        document.getElementById('profileAadhaar').innerText = masked;
+      }
+
+      // Check current location to calculate distance
+      const savedLoc = localStorage.getItem('currentLocation');
+      if (savedLoc) {
+        const loc = JSON.parse(savedLoc);
+        mpCoords = { latitude: loc.latitude, longitude: loc.longitude };
+      }
+
+      renderFeeds();
+    });
+
+    // Haversine distance
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; 
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    // Priority Score formula
+    function calculatePriorityScore(issue) {
+      const ageHours = (Date.now() - (issue.createdTime || Date.now())) / (1000 * 60 * 60);
+      const recencyWeight = Math.max(0, 24 - ageHours); 
+      const votesVal = parseInt(issue.votes || 0);
+      const commentsVal = (issue.comments || []).length;
+      return votesVal + (commentsVal * 2) + recencyWeight;
+    }
+
+    function getPriorityDetails(score) {
+      if (score >= 15) {
+        return { label: "🔥 High Priority", bg: "bg-rose-500/10 border-rose-500/20 text-rose-400" };
+      } else if (score >= 5) {
+        return { label: "🟠 Medium Priority", bg: "bg-amber-500/10 border-amber-500/20 text-amber-400" };
+      } else {
+        return { label: "🟢 Low Priority", bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" };
+      }
+    }
+
+    function getStatusClass(status) {
+      switch(status) {
+        case 'Reported':
+          return "bg-slate-800 border-slate-700 text-slate-300";
+        case 'Under Review':
+          return "bg-cyan-500/10 border-cyan-500/20 text-cyan-400";
+        case 'In Progress':
+          return "bg-amber-500/10 border-amber-500/20 text-amber-400";
+        case 'Resolved':
+          return "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
+        default:
+          return "bg-slate-800 border-slate-700 text-slate-300";
+      }
+    }
+
+    function renderFeeds() {
+      const complaints = JSON.parse(localStorage.getItem('complaints') || '[]');
+      const scope = document.getElementById('constituencyToggle').value;
+      const searchVal = document.getElementById('searchBar').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value;
+      const categoryFilter = document.getElementById('filterCategory').value;
+
+      // Calculate constituency counts
+      const constComplaints = complaints.filter(c => c.city && c.city.toLowerCase() === currentUser.constituency.toLowerCase());
+      const resolvedCount = constComplaints.filter(c => c.status === 'Resolved').length;
+      const pendingCount = constComplaints.filter(c => c.status !== 'Resolved').length;
+
+      document.getElementById('profileResolvedCount').innerText = resolvedCount;
+      document.getElementById('profilePendingCount').innerText = pendingCount;
+
+      // Filter list
+      let filtered = complaints.filter(c => {
+        // Scope Filter (Constituency check)
+        if (scope === 'mine') {
+          if (!c.city || c.city.toLowerCase() !== currentUser.constituency.toLowerCase()) {
+            return false;
+          }
+        }
+
+        // Search filter
+        const matchSearch = 
+          c.title.toLowerCase().includes(searchVal) ||
+          c.description.toLowerCase().includes(searchVal) ||
+          c.category.toLowerCase().includes(searchVal) ||
+          (c.locality && c.locality.toLowerCase().includes(searchVal)) ||
+          (c.city && c.city.toLowerCase().includes(searchVal));
+
+        // Status filter
+        let matchStatus = true;
+        if (statusFilter === 'pending') {
+          matchStatus = c.status !== 'Resolved';
+        } else if (statusFilter !== 'all') {
+          matchStatus = c.status === statusFilter;
+        }
+
+        // Category filter
+        const matchCategory = categoryFilter === 'all' || c.category === categoryFilter;
+
+        return matchSearch && matchStatus && matchCategory;
+      });
+
+      // Sort by Priority Score descending (highest votes/importance first)
+      filtered.sort((a, b) => calculatePriorityScore(b) - calculatePriorityScore(a));
+
+      const mpFeed = document.getElementById('mpFeed');
+      if (filtered.length === 0) {
+        mpFeed.innerHTML = `
+          <div class="bg-[#1e293b] p-6 rounded-xl border border-slate-800 text-center text-xs text-slate-500">
+            No constituency grievances reported matching selected parameters.
+          </div>
+        `;
+      } else {
+        mpFeed.innerHTML = filtered.map(issue => {
+          const score = calculatePriorityScore(issue);
+          const prio = getPriorityDetails(score);
+          const statusClass = getStatusClass(issue.status);
+          const distance = getDistance(mpCoords.latitude, mpCoords.longitude, issue.latitude, issue.longitude).toFixed(1);
+
+          const mapHtml = `
+            <div class="w-full h-36 rounded-lg overflow-hidden border border-slate-800/80">
+              <iframe 
+                width="100%" 
+                height="100%" 
+                frameborder="0" 
+                scrolling="no" 
+                marginheight="0" 
+                marginwidth="0" 
+                src="https://www.openstreetmap.org/export/embed.html?bbox=${issue.longitude-0.003}%2C${issue.latitude-0.003}%2C${issue.longitude+0.003}%2C${issue.latitude+0.003}&layer=mapnik&marker=${issue.latitude}%2C${issue.longitude}">
+              </iframe>
+            </div>
+          `;
+
+          const commentsHtml = (issue.comments || []).map(cmt => `
+            <div class="text-[11px] bg-[#0f172a]/60 border border-slate-800/40 p-2.5 rounded-lg space-y-1">
+              <div class="flex justify-between text-slate-500 font-mono text-[9px]">
+                <span>💬 Anonymous Citizen</span>
+                <span>${cmt.timestamp}</span>
+              </div>
+              <p class="text-slate-300">${cmt.text}</p>
+            </div>
+          `).join('');
+
+          return `
+            <div class="bg-[#1e293b] border border-slate-800 p-5 rounded-xl space-y-4 shadow-lg">
+              <div class="flex justify-between items-start gap-4">
+                <div class="space-y-1.5 flex-grow">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-mono font-bold text-slate-100">${issue.id}</span>
+                    <span class="text-[9px] font-bold bg-slate-800 border border-slate-700 text-slate-300 px-2 py-0.5 rounded uppercase">${issue.category}</span>
+                    <span class="text-[9px] font-bold ${prio.bg} border px-2 py-0.5 rounded">${prio.label}</span>
+                  </div>
+                  <h3 class="text-sm font-bold text-white tracking-tight">${issue.title}</h3>
+                  <p class="text-xs text-slate-400 leading-relaxed">${issue.description}</p>
+                  
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] text-slate-500 font-mono pt-2">
+                    <div class="space-y-1">
+                      <div>📍 Area: ${issue.locality || 'Unknown'}, ${issue.city || 'Unknown'}</div>
+                      <div>🛰️ GPS: ${issue.latitude.toFixed(4)}, ${issue.longitude.toFixed(4)} (${distance} km away)</div>
+                    </div>
+                    <div class="space-y-1 sm:text-right">
+                      <div>📅 Reported: ${issue.date} @ ${issue.time}</div>
+                      <div>👤 Status: <span class="font-bold text-slate-300 uppercase">${issue.status}</span></div>
+                    </div>
+                  </div>
+                </div>
+                <span class="text-[10px] font-black uppercase border px-2.5 py-1 rounded shadow-sm whitespace-nowrap ${statusClass}">${issue.status}</span>
+              </div>
+
+              ${issue.image ? `
+                <div class="w-full max-h-60 rounded-lg overflow-hidden border border-slate-800">
+                  <img src="${issue.image}" class="w-full h-full object-cover">
+                </div>
+              ` : ''}
+
+              ${mapHtml}
+
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex justify-between items-center border-t border-slate-800/60 pt-3">
+                <span>Reported by Anonymous Citizen</span>
+                <span class="text-amber-400 font-mono">${issue.votes} Votes // ${(issue.comments || []).length} Comments</span>
+              </div>
+
+              <!-- MP Action Buttons -->
+              <div class="flex flex-wrap gap-2 border-t border-slate-800/60 pt-3">
+                <button onclick="updateIssueStatus('${issue.id}', 'Under Review')" class="flex-grow bg-cyan-950/40 hover:bg-cyan-900 border border-cyan-900/50 text-cyan-400 font-semibold px-3 py-2 rounded text-xs transition cursor-pointer text-center uppercase tracking-wider">
+                  🔍 Mark Reviewing
+                </button>
+                <button onclick="updateIssueStatus('${issue.id}', 'In Progress')" class="flex-grow bg-amber-950/40 hover:bg-amber-900 border border-amber-900/50 text-amber-400 font-semibold px-3 py-2 rounded text-xs transition cursor-pointer text-center uppercase tracking-wider">
+                  ⚙️ Set In Progress
+                </button>
+                <button onclick="updateIssueStatus('${issue.id}', 'Resolved')" class="flex-grow bg-emerald-950/40 hover:bg-emerald-900 border border-emerald-900/50 text-emerald-400 font-semibold px-3 py-2 rounded text-xs transition cursor-pointer text-center uppercase tracking-wider">
+                  ✅ Resolve Issue
+                </button>
+              </div>
+
+              <!-- Comments Section -->
+              <div class="space-y-3 bg-[#0f172a]/30 p-4 rounded-xl border border-slate-800/50 mt-2">
+                <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Public Comments (${(issue.comments || []).length})</h4>
+                <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                  ${commentsHtml.length > 0 ? commentsHtml : '<p class="text-[10px] text-slate-500 text-center py-2">No citizen comments logged.</p>'}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function updateIssueStatus(id, newStatus) {
+      let complaints = JSON.parse(localStorage.getItem('complaints') || '[]');
+      const idx = complaints.findIndex(c => c.id === id);
+
+      if (idx > -1) {
+        complaints[idx].status = newStatus;
+        localStorage.setItem('complaints', JSON.stringify(complaints));
+        renderFeeds();
+        alert(`💼 Ticket ${id} status updated successfully to: ${newStatus.toUpperCase()}`);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('sessionToken');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

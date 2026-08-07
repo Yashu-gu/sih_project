@@ -2,12 +2,25 @@ import 'dotenv/config'; // Loads .env file automatically
 import express from 'express';
 import cors from 'cors';
 import { GoogleGenAI } from '@google/genai';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Serve static files from root directory
+app.use(express.static(__dirname));
+
+// Root route serves login page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
 
 // Initialize Gemini AI Client
 const apiKey = process.env.GEMINI_API_KEY;
@@ -240,54 +253,6 @@ app.post('/api/verify-otp', (req, res) => {
   else res.status(400).json({ success: false, error: 'Invalid OTP code.' });
 });
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
-// Store in-memory time extension requests
-let extensionRequests = [
-  {
-    id: 'EXT-101',
-    ticketId: 'TICK-104',
-    staffName: 'Ramesh (EMP-204)',
-    ward: 'Koramangala (Ward 151)',
-    reason: 'Heavy monsoon rain damaged newly laid asphalt. Need extra 48 hours for curing.',
-    requestedExtraTime: '+2 Days',
-    status: 'Pending'
-  }
-];
-
-// GET: All Extension Requests for HOD
-app.get('/api/extensions', (req, res) => {
-  res.json({ success: true, extensions: extensionRequests });
-});
-
-// POST: Staff creates a new Extension Request
-app.post('/api/extensions', (req, res) => {
-  const { ticketId, staffName, ward, reason, requestedExtraTime } = req.body;
-  const newExt = {
-    id: `EXT-${Date.now().toString().slice(-4)}`,
-    ticketId,
-    staffName: staffName || 'Field Staff',
-    ward: ward || 'General Ward',
-    reason,
-    requestedExtraTime,
-    status: 'Pending'
-  };
-  extensionRequests.unshift(newExt);
-  res.json({ success: true, message: 'Extension requested.', extension: newExt });
-});
-
-// PATCH: HOD Approves or Rejects Extension
-app.patch('/api/extensions/:id', (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body; // 'Approved' or 'Rejected'
-  
-  const ext = extensionRequests.find(e => e.id === id);
-  if (!ext) return res.status(404).json({ success: false, error: 'Request not found.' });
-
-  ext.status = status;
-  res.json({ success: true, message: `Extension request ${status.toLowerCase()}.`, extension: ext });
-});
-
 // PATCH: HOD Reassigns Neglected Complaint to New Staff
 app.patch('/api/complaints/:id/reassign', (req, res) => {
   const { id } = req.params;
@@ -302,3 +267,6 @@ app.patch('/api/complaints/:id/reassign', (req, res) => {
 
   res.json({ success: true, message: `Complaint reassigned to ${newStaffId}`, complaint });
 });
+
+const PORT = 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
