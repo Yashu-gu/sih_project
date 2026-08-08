@@ -1,16 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Civic Portal | Login</title>
+  <title>Citizen Connect | Civic Portal Login</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
-    .goog-te-banner-frame { display: none !important; }
-    body { top: 0px !important; }
-    .goog-te-gadget { display: none !important; }
-    .skiptranslate { display: none !important; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      top: 0px !important;
+    }
+    .goog-te-banner-frame, .goog-te-gadget, .skiptranslate { display: none !important; }
+    
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
   </style>
 
   <!-- Google Translate Initialization Script -->
@@ -25,110 +34,232 @@
   </script>
   <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex items-center justify-center font-sans p-4">
+<body class="bg-[#0b1329] text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
 
   <div id="google_translate_element" style="display:none;"></div>
 
-  <div class="w-full max-w-md bg-white rounded-xl p-8 shadow-md border border-slate-200">
-    
-    <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
-      <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Preferred Language</span>
-      <div class="flex items-center bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1">
-        <span class="text-xs mr-2">🌐</span>
-        <select id="languageSelector" onchange="changeLanguage(this.value)" class="bg-transparent text-xs text-slate-700 font-medium focus:outline-none cursor-pointer">
-          <option value="en">English</option>
-          <option value="hi">हिंदी (Hindi)</option>
-          <option value="ta">தமிழ் (Tamil)</option>
-          <option value="te">తెలుగు (Telugu)</option>
-          <option value="kn">ಕನ್ನಡ (Kannada)</option>
-          <option value="ml">മലയാളം (Malayalam)</option>
-          <option value="mr">मराठी (Marathi)</option>
-          <option value="bn">বাংলা (Bengali)</option>
-        </select>
+  <!-- MAIN LANDING GRID CONTAINER -->
+  <main class="flex-1 flex items-center justify-center p-4 lg:p-8">
+    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+      <!-- LEFT SIDE: BRANDING & CIVIC IDENTITY PANEL -->
+      <div class="lg:col-span-6 space-y-8 p-4 lg:p-6 relative">
+        
+        <!-- Brand Logo Header -->
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-xl shadow-emerald-950/60">
+            <span class="text-2xl">🌱</span>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              Citizen Connect
+              <span class="text-[10px] font-extrabold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">Civic Tech</span>
+            </h1>
+            <p class="text-xs text-slate-400 font-medium">Bengaluru Smart Governance Network</p>
+          </div>
+        </div>
+
+        <!-- Hero Headline & Messaging -->
+        <div class="space-y-4">
+          <h2 class="text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            Connecting citizens with the people who keep our city moving.
+          </h2>
+          <p class="text-sm text-slate-300 leading-relaxed font-normal">
+            Report infrastructure issues, track real-time resolution progress, and collaborate directly with municipal ward officers to build a cleaner, safer community.
+          </p>
+        </div>
+
+        <!-- Value Propositions Bullets -->
+        <div class="space-y-3 pt-2">
+          <div class="flex items-start gap-3 p-3 bg-slate-900/60 border border-slate-800/80 rounded-2xl">
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 font-bold">
+              📢
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-slate-200">Instant Field Reporting</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Snap photos of road damage, waste accumulation, or broken streetlights with auto-GPS stamping.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3 p-3 bg-slate-900/60 border border-slate-800/80 rounded-2xl">
+            <div class="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0 font-bold">
+              🤖
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-slate-200">Gemini AI Auto-Routing</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Automated image categorization routes reports directly to the assigned ward engineer.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3 p-3 bg-slate-900/60 border border-slate-800/80 rounded-2xl">
+            <div class="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 shrink-0 font-bold">
+              ✅
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-slate-200">Transparent Resolution</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Follow before-and-after photo verification as staff officers mark issues resolved.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subtle City Grid SVG Pattern Background -->
+        <div class="absolute -bottom-10 -left-10 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
       </div>
-    </div>
 
-    <div class="mb-6 text-center">
-      <h1 id="card-title" class="text-2xl font-bold text-slate-900">Civic Portal Login</h1>
-      <p id="card-desc" class="text-sm text-slate-500 mt-1">Select your portal access level to continue.</p>
-    </div>
+      <!-- RIGHT SIDE: LOGIN CARD PANEL -->
+      <div class="lg:col-span-6 flex justify-center">
+        <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 lg:p-8 shadow-2xl space-y-6 relative backdrop-blur-md">
+          
+          <!-- Top Header: Language Selector -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800/80">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Preferred Language</span>
+            
+            <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 shadow-inner">
+              <span class="text-xs mr-2">🌐</span>
+              <select id="languageSelector" onchange="changeLanguage(this.value)" class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer">
+                <option value="en" class="bg-slate-900">English</option>
+                <option value="hi" class="bg-slate-900">हिंदी (Hindi)</option>
+                <option value="ta" class="bg-slate-900">தமிழ் (Tamil)</option>
+                <option value="te" class="bg-slate-900">తెలుగు (Telugu)</option>
+                <option value="kn" class="bg-slate-900">ಕನ್ನಡ (Kannada)</option>
+                <option value="ml" class="bg-slate-900">മലയാളം (Malayalam)</option>
+                <option value="mr" class="bg-slate-900">मराठी (Marathi)</option>
+                <option value="bn" class="bg-slate-900">বাংলা (Bengali)</option>
+              </select>
+            </div>
+          </div>
 
-    <!-- Step 1: Role Selection -->
-    <div id="step-role" class="space-y-3">
-      <button onclick="selectRole('citizen')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg transition text-sm cursor-pointer">
-        Login as Citizen
-      </button>
-      <button onclick="selectRole('staff')" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 rounded-lg transition text-sm cursor-pointer">
-        Login as Staff Member
-      </button>
+          <!-- Card Welcome Title -->
+          <div class="text-center space-y-1">
+            <h2 id="card-title" class="text-xl font-bold text-white tracking-tight">Civic Portal Access</h2>
+            <p id="card-desc" class="text-xs text-slate-400">Choose how you'd like to access Citizen Connect.</p>
+          </div>
 
-      <!-- MODIFIED: Staff Details Step with Ward Selection & Employee ID -->
-      <div id="staffDeptContainer" class="hidden mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Employee ID</label>
-          <input type="text" id="staffEmpId" placeholder="e.g. EMP-201" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600">
+          <!-- STEP 1: PORTAL ROLE ACCESS CARDS -->
+          <div id="step-role" class="space-y-4">
+            
+            <!-- Citizen Portal Access Card -->
+            <div onclick="selectRole('citizen')" class="p-4 bg-slate-950/80 border border-slate-800 hover:border-emerald-500/80 rounded-2xl cursor-pointer transition group space-y-2 hover:-translate-y-0.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xl text-emerald-400">
+                    👤
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-white group-hover:text-emerald-400 transition">Citizen Portal</h3>
+                    <p class="text-[11px] text-slate-400">Report and track community issues</p>
+                  </div>
+                </div>
+                <span class="text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </div>
+
+            <!-- Staff Portal Access Card -->
+            <div onclick="selectRole('staff')" class="p-4 bg-slate-950/80 border border-slate-800 hover:border-indigo-500/80 rounded-2xl cursor-pointer transition group space-y-2 hover:-translate-y-0.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-xl text-indigo-400">
+                    🛡️
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-white group-hover:text-indigo-400 transition">Staff Portal</h3>
+                    <p class="text-[11px] text-slate-400">Manage and resolve community issues</p>
+                  </div>
+                </div>
+                <span class="text-xs font-bold text-indigo-400 group-hover:translate-x-1 transition-transform">→</span>
+              </div>
+            </div>
+
+            <!-- Staff Details Form Container (shown when Staff role selected) -->
+            <div id="staffDeptContainer" class="hidden mt-4 p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Employee ID</label>
+                <input type="text" id="staffEmpId" value="EMP-201" placeholder="e.g. EMP-201" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500">
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Assigned Department</label>
+                <select id="staffDept" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                  <option value="Roads & Public Works (PWD)">Roads & Public Works (PWD)</option>
+                  <option value="Waste Management & Sanitation">Waste Management & Sanitation</option>
+                  <option value="Water Supply & Sewage">Water Supply & Sewage</option>
+                  <option value="Electrical & Streetlighting">Electrical & Streetlighting</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Assigned Ward Location</label>
+                <select id="staffWard" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer">
+                  <option value="Koramangala">Koramangala (Ward 151)</option>
+                  <option value="Indiranagar">Indiranagar (Ward 112)</option>
+                  <option value="Whitefield">Whitefield (Ward 84)</option>
+                  <option value="Jayanagar">Jayanagar (Ward 153)</option>
+                  <option value="HSR Layout">HSR Layout (Ward 174)</option>
+                  <option value="All">All Wards (Department Head)</option>
+                </select>
+              </div>
+
+              <button onclick="confirmStaffDetails()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-2.5 rounded-xl transition text-xs shadow-lg shadow-indigo-950 cursor-pointer">
+                Confirm Staff Details & Continue
+              </button>
+            </div>
+
+          </div>
+
+          <!-- STEP 2: MOBILE NUMBER INPUT -->
+          <div id="step-phone" class="space-y-4 hidden">
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">Mobile Number</label>
+              <div class="relative flex rounded-xl overflow-hidden border border-slate-800 focus-within:border-emerald-500 transition bg-slate-950">
+                <span class="bg-slate-900 px-4 py-3 text-xs font-bold text-slate-400 border-r border-slate-800 select-none flex items-center">+91</span>
+                <input type="tel" id="phone" value="9876543210" maxlength="10" class="w-full bg-transparent px-4 py-3 text-xs text-white font-mono focus:outline-none tracking-wider">
+              </div>
+            </div>
+
+            <button onclick="requestOTP()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3.5 rounded-xl transition text-xs tracking-wider uppercase shadow-lg shadow-emerald-950/60 cursor-pointer">
+              Send Access Code
+            </button>
+          </div>
+
+          <!-- STEP 3: 4-DIGIT OTP CODE VERIFICATION -->
+          <div id="step-otp" class="space-y-4 hidden">
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-400 mb-2">4-Digit Security Code</label>
+              <input type="text" id="otp" maxlength="4" placeholder="0000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-center text-xl font-mono font-bold text-white tracking-[0.5em] focus:outline-none focus:border-emerald-500 transition">
+              
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 mt-3 text-xs text-slate-400 flex items-center justify-between font-mono">
+                <span>💡 Demo Access Code:</span>
+                <span class="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">1234</span>
+              </div>
+            </div>
+
+            <button id="verifyBtn" onclick="verifyOTP()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3.5 rounded-xl transition text-xs tracking-wider uppercase shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 cursor-pointer">
+              <span>🔒</span> Authenticate & Enter
+            </button>
+          </div>
+
+          <!-- ERROR BANNER -->
+          <p id="errorMsg" class="text-xs font-semibold p-3 rounded-xl hidden text-center bg-rose-500/10 border border-rose-500/20 text-rose-400"></p>
+
+          <!-- TRUST & SECURITY FOOTER NOTICE -->
+          <div class="pt-4 border-t border-slate-800/80 text-center">
+            <p class="text-[11px] text-slate-500 flex items-center justify-center gap-1.5 font-medium">
+              <span>🔒</span> Secure civic access — Your account and reports are protected.
+            </p>
+          </div>
+
         </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Assigned Department</label>
-          <select id="staffDept" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600 cursor-pointer">
-            <option value="Roads & Public Works (PWD)">Roads & Public Works (PWD)</option>
-            <option value="Waste Management & Sanitation">Waste Management & Sanitation</option>
-            <option value="Water Supply & Sewage">Water Supply & Sewage</option>
-            <option value="Electrical & Streetlighting">Electrical & Streetlighting</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Assigned Ward Location</label>
-          <select id="staffWard" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:border-emerald-600 cursor-pointer">
-            <option value="Koramangala">Koramangala (Ward 151)</option>
-            <option value="Indiranagar">Indiranagar (Ward 112)</option>
-            <option value="Whitefield">Whitefield (Ward 84)</option>
-            <option value="Jayanagar">Jayanagar (Ward 153)</option>
-            <option value="HSR Layout">HSR Layout (Ward 174)</option>
-            <option value="All">All Wards (Department Head)</option>
-          </select>
-        </div>
-
-        <button onclick="confirmStaffDetails()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-lg transition text-xs cursor-pointer">
-          Confirm Staff Details & Continue
-        </button>
       </div>
+
     </div>
+  </main>
 
-    <!-- Step 2: Phone Input -->
-    <div id="step-phone" class="space-y-4 hidden">
-      <div>
-        <label class="block text-xs font-semibold uppercase text-slate-600 mb-2">Mobile Number</label>
-        <div class="relative flex rounded-lg overflow-hidden border border-slate-300 focus-within:border-emerald-600 transition">
-          <span class="bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-500 border-r border-slate-300 select-none">+91</span>
-          <input type="tel" id="phone" value="9876543210" maxlength="10" class="w-full bg-white px-4 py-3 text-sm text-slate-900 focus:outline-none">
-        </div>
-      </div>
-      <button onclick="requestOTP()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 rounded-lg transition text-sm cursor-pointer">
-        Send Access Code
-      </button>
-    </div>
+  <!-- FOOTER -->
+  <footer class="py-4 border-t border-slate-800/80 text-center text-xs text-slate-500">
+    <p>© 2026 Citizen Connect • BBMP Bengaluru Governance Network</p>
+  </footer>
 
-    <!-- Step 3: OTP Verification -->
-    <div id="step-otp" class="space-y-4 hidden">
-      <div>
-        <label class="block text-xs font-semibold uppercase text-slate-600 mb-2">4-Digit Security Code</label>
-        <input type="text" id="otp" maxlength="4" placeholder="0000" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-center text-xl font-bold text-slate-900 tracking-[0.5em] focus:outline-none focus:border-emerald-600 transition">
-        <div class="bg-slate-100 rounded-lg p-3 mt-2 text-xs text-slate-600 flex justify-between">
-          <span>💡 Demo Code:</span>
-          <span class="text-emerald-600 font-bold">1234</span>
-        </div>
-      </div>
-      <button onclick="verifyOTP()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg transition text-sm cursor-pointer">
-        Authenticate & Enter
-      </button>
-    </div>
-
-    <p id="errorMsg" class="text-xs font-medium text-rose-600 mt-4 text-center hidden"></p>
-  </div>
-
+  <!-- SCRIPT LOGIC (100% PRESERVED ROUTING & AUTH) -->
   <script>
     let userRole = 'citizen';
 
@@ -167,7 +298,6 @@
       }
     }
 
-    // MODIFIED: Function to handle Staff Details Validation & Store local variables
     function confirmStaffDetails() {
       const empId = document.getElementById('staffEmpId').value.trim();
       if (!empId) {
@@ -182,20 +312,27 @@
       document.getElementById('step-role').classList.add('hidden');
       document.getElementById('step-phone').classList.remove('hidden');
       document.getElementById('card-title').innerText = userRole === 'citizen' ? 'Citizen Verification' : 'Staff Access Check';
+      document.getElementById('card-desc').innerText = userRole === 'citizen' ? 'Enter mobile number for security code.' : 'Verify staff identity to continue.';
     }
 
     function requestOTP() {
       const phone = document.getElementById('phone').value;
       if (phone.length < 10) {
-        showError("Enter a valid 10-digit number.");
+        showError("Enter a valid 10-digit mobile number.");
         return;
       }
       document.getElementById('step-phone').classList.add('hidden');
       document.getElementById('step-otp').classList.remove('hidden');
       hideError();
     }
+
     async function verifyOTP() {
       const otp = document.getElementById('otp').value;
+      const verifyBtn = document.getElementById('verifyBtn');
+
+      verifyBtn.disabled = true;
+      verifyBtn.innerHTML = `<span>⏳</span> Connecting...`;
+
       try {
         const response = await fetch('http://localhost:3000/api/verify-otp', {
           method: 'POST',
@@ -218,18 +355,21 @@
 
             // REDIRECT LOGIC FOR DEPARTMENT HEAD vs FIELD STAFF
             if (chosenWard === 'All') {
-              window.location.href = 'dept-head.html'; // Dedicated Department Head Page
+              window.location.href = 'dept-head.html';
             } else {
-              window.location.href = 'staff.html';     // Regular Field Staff Page
+              window.location.href = 'staff.html';
             }
           } else {
             window.location.href = 'citizen-home.html';
           }
         } else {
-          showError(data.error || "Invalid OTP code.");
+          showError(data.error || "Unable to sign you in. Please check OTP code.");
         }
       } catch (err) {
         showError("Backend connection failed. Make sure server.js is running.");
+      } finally {
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = `<span>🔒</span> Authenticate & Enter`;
       }
     }
 
@@ -245,4 +385,3 @@
   </script>
 </body>
 </html>
-
